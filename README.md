@@ -47,9 +47,8 @@ Performance : Pour le moment tous les objets sont dans la scene pour simplifier.
 
 - Mise en scène
 
-- Musique / son
+- Musique / son : [Oidos](https://www.pouet.net/prod.php?which=69524) ?
 
-- Un vrai ciel avec cycle jour nuit ? Physiquement correct ou Cartoon ?
 
 - Faire un generique d'intro et fin pour ressembler encore plus a un short movie ?
  Generique de fin : Greetings ?
