@@ -25,13 +25,31 @@ En bas de la colline, il voit le panneau point d’exclamation. Il hésite ; il 
 ### 7. Il se fait écraser.
 Fin.
 
+# Note
+
+Anti aliasing :
+
+- Distance Field AA : J'ai testé comme decrit dans ce [papier](https://graphics.stanford.edu/courses/cs348b-20-spring-content/uploads/hart.pdf), ne fonctionne pas dans certain cas.
+- TAA : Au vu de la complexité de l'animation, la reprojection me parait compliqué
+- Supersampling : La bonne méthode pour avoir un rendu de qualité mais trop couteux ? A voir a la fin
+- FXAA : La méthode actuellement utilisée, avec 2 passes. Ca fonctionne bien meme si ca rend l'image un peu flou ?
+
+Performance : Pour le moment tous les objets sont dans la scene pour simplifier. On pourra creer differentes variantes du shader pour ne tracer que certains objets a l'aide de macro.
+
+# Bugs
+
+- Problème dans le calcul de l'AO et du SSS : provoque une discontinuité a certains endroit due au faible sampling. Ajouter une rotation du kernel regle le probleme mais introduit du bruit. (Passer le #if a 1 dans AmbientOcclusion()). A voir si on peut pas etre plus malin sur le sampling.
+
+- Kodelife : fichier binaire, pas de diff sur github :(. A voir si c'est bloquant a terme.
+
 
 # Idées / TODO
+
+- Mise en scène
+
+- Musique / son
 
 - Un vrai ciel avec cycle jour nuit ? Physiquement correct ou Cartoon ?
 
 - Faire un generique d'intro et fin pour ressembler encore plus a un short movie ?
- 
- Generique d'intro : Ctrl+alt+test -> and -> Razor 1911 -> present -> "The Sheep" avec le background en flou ? 
- 
  Generique de fin : Greetings ?
