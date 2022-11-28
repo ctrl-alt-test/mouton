@@ -285,7 +285,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     moon *= smoothstep(.5,.0, sunDir.y);
     
     // stars
-    vec2 p = uv*20.;
+    vec2 p = uv*200.;
     vec2 fp = fract(p)-.5;
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
@@ -318,7 +318,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
     
     
-    float night = (smoothstep(0.,.3, sunDir.y)+.1);
+    float night = mix(.01,1.,smoothstep(0.,.3, sunDir.y));
     
     float ao = fastAO(p, n, .15, 1.25);
     ao *= fastAO(p, n, 1., .1)*.5;
@@ -399,8 +399,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         } else {
             albedo = vec3(1.);
         }
-    }
-    if (dmat.y == SKIN) {
+    } else if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
         sss = pow(sss, vec3(.5,2.5,8.0)+2.)*2.;// * fre;// * pow(fre, 1.);
         spe = pow(spe, vec3(4.))*fre*.02;
@@ -412,14 +411,14 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
-    
+
     // Excited background
     if(dmat.y == GROUND) {
         float theta = cos(atan(uv.x, uv.y)*15.+iTime);
         float r = length(uv)*.3;
         col = mix(col,  mix(vec3(1.,0.5,00), vec3(1.,1.,1.0), smoothstep(-r, r, theta)), excited);
     }
-    
+
     return saturate(col);
 }
 

@@ -93,8 +93,8 @@ void main(void)
         sunDir = normalize(vec3(cos(t), sin(t),-.3)); // Day night cycle
         
         camFocal = 2.;
-        camPos = vec3(25., 5., time*1.5-20.);
-        camTa = vec3(0., 2., time*1.5-20.);
+        camPos = vec3(22., 2., time*0.5-10.);
+        camTa = vec3(0., 2., time*0.5-10.);
     } else if (time < 55.) { // Eye focus
         float time = time-50.;
         float t = smoothstep(2.,2.5,time);
@@ -170,7 +170,7 @@ void main(void)
         
         if (time > 3.)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
-    } else if (time < 95.) { // Pannel warning!
+    } else if (time < 95.) { // Panel warning!
         sheepPos = vec3(0.);
         panelWarningPos = vec3(-5.,0.,-8.);
         
@@ -186,7 +186,7 @@ void main(void)
         camPos = vec3(0.,3., -4.);
         
         camTa = mix(vec3(0., 3., 0.), vec3(-5., 5., -9.), transition);
-    } else if (time < 103.) { // Pannel moonwalk
+    } else if (time < 103.) { // Panel moonwalk
         float time = time-95.;
         
         sheepPos = vec3(0.,0.,-11.);
@@ -200,7 +200,7 @@ void main(void)
         camPos = vec3(-3.,4.,-30.);
         camTa = vec3(-3., 4., 0.);
         camFocal = 3.;
-    } else if (time < 110.) { // Pannel moonwalk
+    } else if (time < 110.) { // Panel moonwalk
         float time = time-103.;
         sheepPos = vec3(0.,0.,time*.5-11.);
         panelWarningPos = vec3(-5.,0.,-8.);
