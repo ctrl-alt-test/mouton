@@ -101,7 +101,7 @@ void main(void)
         
         headRot.y = mix(.25, 0., t);
         
-        animationAmp = vec3(0.,.2*(1.-t), 1.); // Slow walk
+        animationAmp = vec3(1.-t,.2*(1.-t), 1.); // Slow walk
         animationSpeed = vec3(1.,1.,.5);
         
         eyeDir = normalize(vec3(t*.3,.3-t*.3,1.));
@@ -151,7 +151,7 @@ void main(void)
         camPos = vec3(2.75,1., -5.25);
         camTa = vec3(0., 3., 0.);
         
-        float t = mod(time, 3.);
+        float t = mod(time, 2.);
         noseSize += smoothstep(0.5,.6,t)*smoothstep(0.7,.6,t)*.2;
         t = mod(time+.3, 3.);
         noseSize += smoothstep(0.5,.6,t)*smoothstep(0.7,.6,t)*.2;

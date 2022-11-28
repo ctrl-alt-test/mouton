@@ -85,8 +85,6 @@ float shadow( vec3 ro, vec3 rd, float mint, float tmax );
 #define PANEL 6.
 #define PANEL_FOOD 7.
 
-// 0 = None, 1 = Food, 2 = Warning
-//#define PANEL_TYPE 1
 
 
 vec2 dmin(vec2 a, vec2 b) {
@@ -143,9 +141,13 @@ vec2 sheep(vec3 p) {
 
     
     // Body
-    float body = length(p*vec3(1.,1.,.9)-vec3(0.,1.5,2.75))-2.;
+    float tb = iTime*animationSpeed.x;
+    vec3 bodyMove = vec3(cos(tb*PI),cos(tb*PI*2.)*.1,0.)*.025*animationAmp.x;
+    float body = length(p*vec3(1.,1.,.9)-vec3(0.,1.5,2.75)-bodyMove)-2.;
     
     if (body < 3.) {
+        float n = (pow(noise((p-bodyMove)*2.)*.5+.5, .75)*2.-1.);
+        body = body + .05 - n*.2;
 
 
         // Legs
@@ -229,21 +231,17 @@ vec2 sheep(vec3 p) {
 
 
 
-        // hair
+        // hair & tail
         pp = p;
         pp *= vec3(.7,1.,.7);
-        body = smin(body, length(pp-vec3(0.,2.4,0.7))-.4, .0);
-
-        // tail
-        float n = (pow(noise(p*2.)*.5+.5, .75)*2.-1.);
-        body = body + .05 - n*.1;
-        
-        body = smin(body, capsule(p-vec3(0.,0.,cos(p.y-.7)*.5),vec3(cos(iTime*animationSpeed.z)*animationAmp.z,.2,5.), vec3(0.,2.,4.9), .2), 0.2);
-        body = body- n*.1;
+        float hairTail = length(pp-vec3(0.,2.4,0.7))-.4;
+        hairTail = smin(hairTail, capsule(p-vec3(0.,0.,cos(p.y-.7)*.5),vec3(cos(iTime*animationSpeed.z)*animationAmp.z,.2,5.), vec3(0.,2.,4.9), .2), 0.2);
+        hairTail -= (pow(noise(p*2.)*.5+.5, .75)*2.-1.)*.1;
 
         // Union
         vec2 dmat = vec2( body, COTON);
-        dmat = dmin(dmat,vec2(legs, SKIN));
+        dmat = dmin(dmat, vec2( hairTail, COTON));
+        dmat = dmin(dmat, vec2(legs, SKIN));
         dmat = dmin(dmat, vec2(head, SKIN));
         dmat = dmin(dmat, vec2(eyes, EYE));
         dmat = dmin(dmat, vec2(nostrils, SKIN));
@@ -313,6 +311,77 @@ float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
     return saturate(1.0 - falloff*1.5*occ);
 }
 
+vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize, vec3 m) 
+{
+    vec3 n = m*ro;
+    vec3 k = abs(m)*boxSize;
+    vec3 t1 = -n - k;
+    vec3 t2 = -n + k;
+    float tN = max( max( t1.x, t1.y ), t1.z );
+    float tF = min( min( t2.x, t2.y ), t2.z );
+    if( tN>tF || tF<0.0) return vec2(-1.0); // no intersection
+    return vec2( tN, tF );
+}
+
+float fastTrace(vec3 ro, vec3 rd) {
+
+    vec3 m = 1.0/rd;
+    float result = 9999.;
+    
+    // Sheep intersection
+    vec2 nf = boxIntersection(ro-sheepPos-vec3(0.,3.,-2.),rd, vec3(3.,3.,7.), m);
+    if (nf.y>0.) {
+        float t = max(nf.x,0.);
+        for(int i=0; i<128; i++) {
+            vec3 p = ro + rd * t;
+            float d = dmin(vec2(p.y,GROUND),sheep(p)).x; // BUGS : at 23secondes without ground SDF ?!
+            t += d;
+            if (t > nf.y) break;
+            if (abs(d) < 0.001) break;
+        }
+        if (t < nf.y)
+            result = t; 
+    }
+    
+    // Panels
+    {
+        vec2 nf = boxIntersection(ro-panelPos-vec3(0.,5.,-5.),rd, vec3(1.5,5.,1.), m);
+        if (nf.y>0.) {
+            float t = max(nf.x,0.);
+            for(int i=0; i<128; i++) {
+                float d = panelFood(ro+rd*t).x;
+                t += d;
+                if (t > nf.y) break;
+                if (abs(d) < 0.001) break;
+            }
+            if (t < nf.y)
+                result = min(result,t); 
+        }
+    }
+    {
+        vec2 nf = boxIntersection(ro-panelWarningPos-vec3(0.,5.,-5.),rd, vec3(1.5,5.,1.), m);
+        if (nf.y>0.) {
+            float t = max(nf.x,0.);
+            for(int i=0; i<128; i++) {
+                float d = panelWarning(ro+rd*t).x;
+                t += d;
+                if (t > nf.y) break;
+                if (abs(d) < 0.001) break;
+            }
+            if (t < nf.y)
+                result = min(result,t); 
+        }
+    }
+    
+    // Ground intersection
+    {
+        float t = -(ro.y)/rd.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
+        if (t>0.) result = min(result,t);
+    }
+    
+    return result;
+}
+
 // /!\ Not energy conservative!
 vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
@@ -320,7 +389,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     
     float night = mix(.01,1.,smoothstep(0.,.3, sunDir.y));
     
-    float ao = fastAO(p, n, .15, 1.25);
+    float ao = fastAO(p, n, .15, 1.);
     ao *= fastAO(p, n, 1., .1)*.5;
     
     float shad = shadow(p, sunDir, .08, 50.);
@@ -399,7 +468,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         } else {
             albedo = vec3(1.);
         }
-    } else if (dmat.y == SKIN) {
+    }
+    if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
         sss = pow(sss, vec3(.5,2.5,8.0)+2.)*2.;// * fre;// * pow(fre, 1.);
         spe = pow(spe, vec3(4.))*fre*.02;
@@ -441,7 +511,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
         
         // Trace
+        #if 1
+        float t = fastTrace(ro,rd);
+        #else
         float t = trace(ro, rd, vec2(1.5, 100.));
+        #endif
         vec3 p = ro + rd * t;
         vec3 n = normal(p);
         vec3 col = shade(ro, rd, p, n, v);
