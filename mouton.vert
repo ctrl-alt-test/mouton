@@ -199,22 +199,48 @@ void main(void)
         animationSpeed = vec3(0.,.2,1.);
         camPos = vec3(-3.,4.,-30.);
         camTa = vec3(-3., 4., 0.);
-        camFocal = 3.;
-    } else if (time < 110.) { // Panel moonwalk
+        camFocal = 3.5;
+    } else if (time < 113.) { // Panel moonwalk
         float time = time-103.;
+        float up = smoothstep(6.,9.,time);
         sheepPos = vec3(0.,0.,time*.5-11.);
-        panelWarningPos = vec3(-5.,0.,-8.);
-        
-        eyeDir = normalize(vec3(0.,.5,1.)); // Tired
-        headRot.y = .5;
-        headRot.x = .15*sin(time*3.);
+        panelWarningPos = vec3(-2.,0.,-8.);
+        eyeDir = normalize(vec3(-.5,.25-up*.75,1.));
+        headRot.y = .5-up*1.;
         animationAmp = vec3(1.,.2,.5);
         animationSpeed = vec3(-1.,1.,1.);
-        camPos = vec3(20.,5.,-6.);
+        camPos = vec3(18.,5.,-5.);
         camTa = vec3(-5., 5., -6.);
         camFocal = 3.;
+    } else if (time < 120.) { // focus face, looking left/right
+        float time = time-113.;
+        float t = sin(clamp(time,0.,6.28));
+        animationAmp = vec3(0.);
+        animationSpeed = vec3(0.);
+        
+        eyeDir = normalize(vec3(t*.7,-smoothstep(6.,10.,time),1.));
+        headRot.x = t * 0.25;
+        
+        camFocal = 3.5;
+        camPos = vec3(0.,2., -8.);
+        camTa = vec3(0., 3., 0.);
+    } else if (time < 130.) { // focus face / warning
+        float time = time-113.;
+        float t = sin(clamp(time,0.,6.28));
+        animationAmp = vec3(0.);
+        animationSpeed = vec3(0.);
+        panelWarningPos = vec3(0.,0.,-8.);
+        
+        if (mod(time, 2.) < 1.) {
+            camPos = vec3(0.,2., -8.);
+            camTa = vec3(0., 3., 0.);
+        } else {
+            camPos = vec3(0.,5.5, 2.);
+            camTa = vec3(0., 5.75, 0.);
+        }
+        eyeDir = normalize(vec3(t*.7,-.1,1.));
+        headRot.x = t * 0.25;
+        
+        camFocal = 3. + time*.1;
     }
-    
-    
-    
 }
