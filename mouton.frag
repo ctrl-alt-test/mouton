@@ -11,8 +11,9 @@ out vec4 fragColor;
 in vec3 animationAmp;
 in vec3 animationSpeed;
 in vec2 headRot;
-in vec3 sheepPos;
+in vec3 sheepPos;    
 in vec3 panelPos;
+in vec3 flowerPos;
 in vec3 panelWarningPos;
 in vec3 sunDir;
 in vec3 camPos;
@@ -59,12 +60,12 @@ float cappedCone( vec3 p, float h, float r1, float r2 );
 float cappedTorus(in vec3 p, in vec2 sc, in float ra, in float rb);
 float capsule( vec3 p, vec3 a, vec3 b, float r );
 float torus( vec3 p, vec2 t );
+float ellipsoid( vec3 p, vec3 r);
 float smin( float d1, float d2, float k );
 float smax( float a, float b, float k );
 float triangle( vec3 p, vec2 h, float r );
 float UnevenCapsule2d( vec2 p, float r1, float r2, float h );
 float star2d(in vec2 p, in float r, in float rf);
-
 
 
 // ---------------------------------------------
@@ -84,11 +85,50 @@ float shadow( vec3 ro, vec3 rd, float mint, float tmax );
 #define METAL 5.
 #define PANEL 6.
 #define PANEL_FOOD 7.
+#define PISTIL 8.
+#define PETAL 9.
+#define TIGE 10.
 
 
 
 vec2 dmin(vec2 a, vec2 b) {
     return a.x<b.x ? a : b;
+}
+
+vec2 moda (vec2 p, float per)
+{
+    float a = atan(p.y,p.x);
+    float l = length(p);
+    a = mod(a-per/2.,per)-per/2.;
+    return vec2 (cos(a),sin(a))*l;
+}
+
+vec2 flower(vec3 p) {
+
+    p -= flowerPos;
+    vec3 pr = p;
+    pr.x += cos(3.1*.25+iTime)*3.1*.2;
+    pr.y -= 2.8;
+    pr.zy = rot(.75) * pr.zy;
+    float pistil = ellipsoid(pr-vec3(0.,.3,0.), vec3(1.,.2+cos(pr.x*150.)*sin(pr.z*150.)*.05,1.)*.25);
+    if (pistil < 5.) {
+        vec2 dmat = vec2(pistil, PISTIL);
+        
+        vec3 pp = pr;
+        pp.xz = moda(pp.xz, PI*.2);
+        float petals = ellipsoid(pp-vec3(0.5,.2+sin(pp.x*2.)*.15,0.), vec3(2.,.1+sin(pp.z*50.)*.02,.75)*.25);
+        if (petals < dmat.x) {
+            dmat = vec2(petals, PETAL);
+        }
+        
+        float tige = max(length(p.xz + vec2(cos(p.y*.25+iTime)*p.y*.2,-.075) )-smoothstep(3.1,0., p.y)*.1-0.02, p.y-3.1);
+        if (tige < dmat.x) {
+            dmat = vec2(tige, TIGE);
+        }
+        
+        return dmat;
+    }
+    return vec2(999999., GROUND);
 }
 
 vec2 panelFood(vec3 p) {
@@ -259,6 +299,7 @@ vec2 map(vec3 p) {
     vec2 dmat = vec2(p.y, GROUND);
     
     dmat = dmin(dmat, sheep(p));
+    dmat = dmin(dmat, flower(p));
     dmat = dmin(dmat, panelFood(p));
     dmat = dmin(dmat, panelWarning(p));
     
@@ -373,6 +414,22 @@ float fastTrace(vec3 ro, vec3 rd) {
         }
     }
     
+    // Flower
+    {
+        vec2 nf = boxIntersection(ro-flowerPos-vec3(0.,5.,0.),rd, vec3(2.,5.,1.), m);
+        if (nf.y>0.) {
+            float t = max(nf.x,0.);
+            for(int i=0; i<128; i++) {
+                float d = flower(ro+rd*t).x;
+                t += d;
+                if (t > nf.y) break;
+                if (abs(d) < 0.001) break;
+            }
+            if (t < nf.y)
+                result = min(result,t); 
+        }
+    }
+    
     // Ground intersection
     {
         float t = -(ro.y)/rd.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
@@ -387,7 +444,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
     
     
-    float night = mix(.01,1.,smoothstep(0.,.3, sunDir.y));
+    float night = smoothstep(0.,.3, sunDir.y)+.1;
     
     float ao = fastAO(p, n, .15, 1.);
     ao *= fastAO(p, n, 1., .1)*.5;
@@ -468,6 +525,27 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         } else {
             albedo = vec3(1.);
         }
+    } else if (dmat.y == PISTIL) {
+        vec3 pr = p - flowerPos;
+        pr.x += cos(3.1*.25+iTime)*3.1*.2;
+        pr.y -= 2.8;
+        pr.zy = rot(.75) * pr.zy;
+        albedo = mix(vec3(2.,.75,.0), vec3(2.,2.,.0), smoothstep(0.,.45, length(pr-vec3(0.,.3,0.))))*2.;
+        sss = vec3(0.01);
+        spe = vec3(0.);
+    } else if (dmat.y == TIGE) {
+        albedo = vec3(0.,.1,.0);
+        sss *= vec3(1.);
+        spe *= vec3(1.)*fre;
+    } else if (dmat.y == PETAL) {
+        vec3 pr = p - flowerPos;
+        pr.x += cos(3.1*.25+iTime)*3.1*.2;
+        pr.y -= 2.8;
+        pr.zy = rot(.75) * pr.zy;
+        albedo = mix(vec3(1.,1.,1.)+.5, vec3(.75,0.5,1.), smoothstep(0.6,1., length(pr-vec3(0.,.3,0.))))*2.;
+       // albedo = vec3(1.,1.,1.)*3.;
+        sss *=0.0;
+        spe = pow(spe, vec3(4.))*fre*1.0;
     }
     if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
@@ -476,8 +554,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     }
     
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. + spe*1.)  + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
-    //col = sss;//diff + bnc + amb + sss;
-    //col = spe;
+    //col = diff;//diff + bnc + amb + sss;
+    //col = albedo * spe;
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
@@ -511,7 +589,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
         
         // Trace
-        #if 1
+        #if 0
         float t = fastTrace(ro,rd);
         #else
         float t = trace(ro, rd, vec2(1.5, 100.));
@@ -703,6 +781,12 @@ float torus( vec3 p, vec2 t )
   vec2 q = vec2(length(p.xy)-t.x,p.z);
   return length(q)-t.y;
 }
+float ellipsoid( vec3 p, vec3 r )
+{
+  float k0 = length(p/r);
+  float k1 = length(p/(r*r));
+  return k0*(k0-1.0)/k1;
+}
 
 float smin( float d1, float d2, float k )
 {
@@ -745,3 +829,4 @@ float star2d(in vec2 p, in float r, in float rf)
     float h = clamp( dot(p,ba)/dot(ba,ba), 0.0, r );
     return length(p-ba*h) * sign(p.y*ba.x-p.x*ba.y);
 }
+
