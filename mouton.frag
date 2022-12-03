@@ -21,6 +21,7 @@ in vec3 camTa;
 in float camFocal;
 in float blink;
 in vec3 eyeDir;
+in float eyesSurprise;
 in float excited;
 in float fishEyeFactor;
 in float noseSize;
@@ -262,7 +263,7 @@ vec2 sheep(vec3 p) {
         //eyes
         pp = ph;
         pp.x = abs(ph.x)-.4;
-        float eyes = length(pp-vec3(0.,0.,-1.)) - .3;
+        float eyes = length(pp*vec3(1.,1.,1.-eyesSurprise)-vec3(0.,0.,-1.)) - .3;
 
         // nostrils
         pp.x = abs(ph.x)-.2;
@@ -480,7 +481,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = vec3(1.);
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
-        albedo *= smoothstep(-0.953,-.952, nde);
+        albedo *= smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
         spe = pow(spe, vec3(80.))*fre;
     } else if(dmat.y == METAL) {
@@ -603,7 +604,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
             vec2 p = v*5.;
             p.x = abs(p.x+.0)-1.5;
             p.y -= 1.4;
-            p = rot(iTime) * p;
+            p = rot(iTime*5.) * p;
             col = mix(col, mix(vec3(1.,.8,0.1), vec3(1.), smoothstep(-.1,.5,v.y)), smoothstep(0.,-0.01, star2d(p, 1.7, .5)) * excited);
         }
         

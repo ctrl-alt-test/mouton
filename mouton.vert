@@ -16,6 +16,7 @@ out float noseSize;
 out vec3 sunDir;
 out float blink;
 out float excited;
+out float eyesSurprise;
 out vec3 eyeDir;
 out vec3 camPos;
 out vec3 camTa;
@@ -49,6 +50,7 @@ void main(void)
     fishEyeFactor = 0.;
     headRot = vec2(0.);
     noseSize = 1.;
+    eyesSurprise = 0.;
     
     
     // Timeline
@@ -107,6 +109,7 @@ void main(void)
         animationSpeed = vec3(1.,1.,.5);
         
         eyeDir = normalize(vec3(t*.3,.3-t*.3,1.));
+        eyesSurprise = smoothstep(4.6,4.8,time)*.2;
         
         camFocal = 4.;
         camPos = vec3(0.,3., -4.);
