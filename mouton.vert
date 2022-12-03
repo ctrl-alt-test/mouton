@@ -256,5 +256,41 @@ void main(void)
         camFocal = 2.;
         camPos = vec3(cos(t),.5,sin(t))*10.;
         camTa = vec3(0., 2., 0.);
+    } else if (time < 152.) { // focus face / warning / flower
+        float time = time-140.;
+        float t = sin(clamp(time,0.,6.28));
+        animationAmp = vec3(0.);
+        animationSpeed = vec3(0.);
+        panelWarningPos = vec3(0.,0.,-8.);
+        flowerPos = vec3(4.,0.,-8.);
+
+        int iTime = int(time);
+        if (iTime % 4 == 1) { // sign
+            camPos = vec3(0.,5.5, 2.);
+            camTa = vec3(0., 5.75, 0.);
+        } else if (iTime % 4 == 3) { // flower
+            camPos = vec3(0.,5.5, 2.);
+            camTa = vec3(4., 3., -8.);
+        } else { // sheep
+            camPos = vec3(0.,2., -8.);
+            camTa = vec3(0., 3., 0.);
+        }
+        float p = pow(fract(time),.5);
+        if (iTime % 4 == 0) p = 1. - p;
+        eyeDir = normalize(mix(vec3(0.,-.2,1.), vec3(-.2,.2,1.), p));
+        // headRot.x = t * 0.25;
+        
+        camFocal = 3. + time*.1;
+    } else if (time < 162.) { // Flower run
+        float time = time-152.;
+        eyeDir = normalize(vec3(0.,0.,1.));
+        sheepPos = vec3(0.,0.,-time*2.-2.);
+        panelWarningPos = vec3(-5.,0.,-8.);
+        flowerPos = vec3(2.,0.,-30.);
+        animationAmp = vec3(1.,1.,.5);
+        animationSpeed = vec3(3.,1.5,6.);
+        camPos = vec3(16.,5.,9.-time);
+        camTa = vec3(3., 5., -3.-time*2.);
+        camFocal = 3.+time*.1;
     }
 }
