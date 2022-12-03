@@ -284,8 +284,24 @@ void main(void)
         // headRot.x = t * 0.25;
         
         camFocal = 2.8 + time*.15;
-    } else if (time < 152.) { // Flower run
+    } else if (time < 145.) { // decision taken
         float time = time-142.;
+        float t = sin(clamp(time,0.,6.28));
+        animationAmp = vec3(0.1);
+        animationSpeed = vec3(0.1);
+
+        int iTime = int(time);
+        camPos = vec3(0.,2.4, -8.);
+        camTa = vec3(0., 3., 0.);
+
+        headRot.x = -.1;
+        headRot.y = sin(time*2.)*.1;
+        eyesSurprise = smoothstep(0.,3.,time)*.1;
+        eyeDir = normalize(vec3(-.2,.2,1.));
+        
+        camFocal = 3.2 - time*.15;
+    } else if (time < 155.) { // Flower run
+        float time = time-145.;
         eyeDir = normalize(vec3(0.,0.,1.));
         sheepPos = vec3(0.,0.,-time*2.-2.);
         panelWarningPos = vec3(-5.,0.,-8.);
