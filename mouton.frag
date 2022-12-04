@@ -15,6 +15,7 @@ in vec3 sheepPos;
 in vec3 panelPos;
 in vec3 flowerPos;
 in vec3 panelWarningPos;
+in vec3 anvilPos;
 in vec3 sunDir;
 in vec3 camPos;
 in vec3 camTa;
@@ -89,6 +90,7 @@ float shadow( vec3 ro, vec3 rd, float mint, float tmax );
 #define PISTIL 8.
 #define PETAL 9.
 #define TIGE 10.
+#define BLACK_METAL 11.
 
 
 
@@ -102,6 +104,22 @@ vec2 moda (vec2 p, float per)
     float l = length(p);
     a = mod(a-per/2.,per)-per/2.;
     return vec2 (cos(a),sin(a))*l;
+}
+
+
+vec2 anvil(vec3 p) {
+    p -= anvilPos;
+    float h = pow(saturate(p.y-1.),.5);
+    float d = box(p-vec3(0.,1.,0.), vec3(1.5-h,1.,2.5-h));
+    d = min(d, box(p-vec3(0.,3.,0.), vec3(2.,1.,3.)));
+    
+    float d2 = length((p.yz-vec2(4.5,3.))*vec2(1.,.8))-2.;
+    d2 = max(d2, abs(p.x)-.5);
+    d2 = max(d2, p.y-3.5);
+    d = min(d, d2);
+    vec2 dmat = vec2(d-.1, BLACK_METAL);
+    
+    return dmat;
 }
 
 vec2 flower(vec3 p) {
@@ -303,6 +321,7 @@ vec2 map(vec3 p) {
     dmat = dmin(dmat, flower(p));
     dmat = dmin(dmat, panelFood(p));
     dmat = dmin(dmat, panelWarning(p));
+    dmat = dmin(dmat, anvil(p));
     
     return dmat;
 }
@@ -431,6 +450,22 @@ float fastTrace(vec3 ro, vec3 rd) {
         }
     }
     
+    // Anvil
+    {
+        vec2 nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(2.,3.,5.2), m);
+        if (nf.y>0.) {
+            float t = max(nf.x,0.);
+            for(int i=0; i<128; i++) {
+                float d = anvil(ro+rd*t).x;
+                t += d;
+                if (t > nf.y) break;
+                if (abs(d) < 0.001) break;
+            }
+            if (t < nf.y)
+                result = min(result,t); 
+        }
+    }
+    
     // Ground intersection
     {
         float t = -(ro.y)/rd.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
@@ -547,7 +582,14 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
        // albedo = vec3(1.,1.,1.)*3.;
         sss *=0.0;
         spe = pow(spe, vec3(4.))*fre*1.0;
-    }
+    } else if(dmat.y == BLACK_METAL) {
+        albedo = vec3(1.);
+        diff *= vec3(.25)*fre;
+        amb *= vec3(.25)*fre;
+        bnc *= vec3(0.25)*fre;
+        sss = vec3(0.);
+        spe = pow(spe, vec3(8.))*fre*2.;
+    } 
     if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
         sss = pow(sss, vec3(.5,2.5,8.0)+2.)*2.;// * fre;// * pow(fre, 1.);
@@ -590,7 +632,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
         
         // Trace
-        #if 0
+        #if 1
         float t = fastTrace(ro,rd);
         #else
         float t = trace(ro, rd, vec2(1.5, 100.));
@@ -830,4 +872,3 @@ float star2d(in vec2 p, in float r, in float rf)
     float h = clamp( dot(p,ba)/dot(ba,ba), 0.0, r );
     return length(p-ba*h) * sign(p.y*ba.x-p.x*ba.y);
 }
-

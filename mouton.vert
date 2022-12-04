@@ -8,6 +8,7 @@ out vec3 sheepPos;
 out vec3 flowerPos;
 out vec3 panelPos;
 out vec3 panelWarningPos;
+out vec3 anvilPos;
 out vec2 headRot;
 out vec3 animationAmp; //(x = walking, y = head, z = tail)
 out vec3 animationSpeed; //(x = walking, y = head, z = tail)
@@ -42,6 +43,7 @@ void main(void)
     panelPos = vec3(9999.);
     flowerPos = vec3(9999.);
     panelWarningPos = vec3(9999.);
+    anvilPos = vec3(9999.);
     camFocal = 2.;
     blink = max(fract(iTime*.333), fract(iTime*.123+.1));
     excited = 0.;
@@ -311,5 +313,22 @@ void main(void)
         camPos = vec3(16.,5.,9.-time);
         camTa = vec3(3., 5., -3.-time*2.);
         camFocal = 3.+time*.1;
+    } else if (time < 160.) { // Splash
+        float time = time-155.;
+        
+        
+        eyeDir = normalize(vec3(0.,0.,1.));
+        sheepPos = vec3(0.,-smoothstep(0.05,0.1,time)*4.5,-22.);
+        panelWarningPos = vec3(-5.,0.,-8.);
+        flowerPos = vec3(2.,0.,-30.);
+        animationAmp = vec3(1.,1.,.5);
+        animationSpeed = vec3(3.,1.5,6.);
+        
+        camPos = vec3(16.,5.,-1.);
+        camTa = vec3(3., 5., -23.);
+        camFocal = 4.;
+        
+        float fall = smoothstep(.1,0.,time)*13.;
+        anvilPos = vec3(0.,fall,-22.);
     }
 }
