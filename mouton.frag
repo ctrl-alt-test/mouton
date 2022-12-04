@@ -184,7 +184,7 @@ vec2 sheep(vec3 p) {
     // Body
     float tb = iTime*animationSpeed.x;
     vec3 bodyMove = vec3(cos(tb*PI),cos(tb*PI*2.)*.1,0.)*.025*animationAmp.x;
-    float body = length(p*vec3(1.,1.,.9)-vec3(0.,1.5,2.75)-bodyMove)-2.;
+    float body = length(p*vec3(1.,1.,.825)-vec3(0.,1.5,2.55)-bodyMove)-2.;
     
     if (body < 3.) {
         float n = (pow(noise((p-bodyMove)*2.)*.5+.5, .75)*2.-1.);
@@ -321,7 +321,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec2 moonPos = vec2(cos(iTime*.7+2.3), sin(iTime*.7+2.3) );
     float moon = smoothstep(0.201,0.2, length(uv-moonPos));
     moon *= smoothstep(0.2,0.201, length(uv-moonPos-vec2(.1,0.025)));
-    moon += smoothstep(1.,0., length(uv-moonPos))*.02;
+    moon += smoothstep(2.,0., length(uv-moonPos))*.02;
     moon *= smoothstep(.5,.0, sunDir.y);
     
     // stars
@@ -330,7 +330,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.1;
-    moon += smoothstep(s,0.+s*.01, length(fp+rnd.xy-.5) ) *(cos(iTime*3.+rnd.z*3.14+rnd.x+rnd.y)*.5+.5);
+    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*6.*rnd.y+rnd.z*3.14)*.5+.5)*2.;
     
     
     col += moon*smoothstep(.5,-1., sunDir.y);

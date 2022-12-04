@@ -203,7 +203,7 @@ void main(void)
         headRot.x = smoothstep(4.,8., time)*.25*sin(time*3.);
         animationAmp = vec3(1.,.2,.5);
         animationSpeed = vec3(0.,.2,1.);
-        camPos = vec3(-3.,4.,-30.);
+        camPos = vec3(-3.,4.8,-30.);
         camTa = vec3(-3., 4., 0.);
         camFocal = 3.5;
     } else if (time < 112.) { // Panel moonwalk
