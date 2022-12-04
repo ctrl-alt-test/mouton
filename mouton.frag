@@ -91,6 +91,7 @@ float shadow( vec3 ro, vec3 rd, float mint, float tmax );
 #define PETAL 9.
 #define TIGE 10.
 #define BLACK_METAL 11.
+#define BLOOD 12.
 
 
 
@@ -106,20 +107,32 @@ vec2 moda (vec2 p, float per)
     return vec2 (cos(a),sin(a))*l;
 }
 
+vec2 blood(vec3 p) {
+    p.xz -= anvilPos.xz;
+    p.y -= -anvilPos.y;
+    float d = p.y+smoothstep(1.,20.,length(p.xz));
+    if (d < .4) return vec2(d-(noise(p*3.5)*.5+.5)*.3, BLOOD);
+    else return vec2(9999., GROUND);
+}
+
 
 vec2 anvil(vec3 p) {
     p -= anvilPos;
     float h = pow(saturate(p.y-1.),.5);
     float d = box(p-vec3(0.,1.,0.), vec3(1.5-h,1.,2.5-h));
-    d = min(d, box(p-vec3(0.,3.,0.), vec3(2.,1.,3.)));
-    
-    float d2 = length((p.yz-vec2(4.5,3.))*vec2(1.,.8))-2.;
-    d2 = max(d2, abs(p.x)-.5);
-    d2 = max(d2, p.y-3.5);
-    d = min(d, d2);
-    vec2 dmat = vec2(d-.1, BLACK_METAL);
-    
-    return dmat;
+    if (d<10.) {
+        d = min(d, box(p-vec3(0.,3.,0.), vec3(2.,1.,3.)));
+        
+        float d2 = length((p.yz-vec2(4.5,3.))*vec2(1.,.8))-2.;
+        d2 = max(d2, abs(p.x)-.5);
+        d2 = max(d2, p.y-3.5);
+        d = min(d, d2);
+        vec2 dmat = vec2(d-.1, BLACK_METAL);
+        
+        return dmat;
+    } else {
+        return vec2(9999999.,GROUND);
+    }
 }
 
 vec2 flower(vec3 p) {
@@ -322,6 +335,7 @@ vec2 map(vec3 p) {
     dmat = dmin(dmat, panelFood(p));
     dmat = dmin(dmat, panelWarning(p));
     dmat = dmin(dmat, anvil(p));
+    dmat = dmin(dmat, blood(p));
     
     return dmat;
 }
@@ -452,7 +466,7 @@ float fastTrace(vec3 ro, vec3 rd) {
     
     // Anvil
     {
-        vec2 nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(2.,3.,5.2), m);
+        vec2 nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(2.2,3.,5.2), m);
         if (nf.y>0.) {
             float t = max(nf.x,0.);
             for(int i=0; i<128; i++) {
@@ -466,9 +480,26 @@ float fastTrace(vec3 ro, vec3 rd) {
         }
     }
     
+    // Blood
+    {
+        float t = -(ro.y+.4) * m.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
+        if (t > 0. && length((ro+rd*t).xz-anvilPos.xz)<10.) {
+            float t = -t; // ???? WTF ????
+            for(int i=0; i<128; i++) {
+                vec3 p = ro+rd*t;
+                float d = min(p.y,blood(p).x);
+                t += d;
+                if (t > 100.) break;
+                if (abs(d) < 0.001) break;
+            }
+            if (t < 100.)
+                result = min(result,t); 
+        }
+    }
+    
     // Ground intersection
     {
-        float t = -(ro.y)/rd.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
+        float t = -(ro.y) * m.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
         if (t>0.) result = min(result,t);
     }
     
@@ -589,6 +620,14 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         bnc *= vec3(0.25)*fre;
         sss = vec3(0.);
         spe = pow(spe, vec3(8.))*fre*2.;
+    }  else if(dmat.y == BLOOD) {
+        albedo = vec3(1.,.01,.01);
+        float fre2 = fre*fre;
+        diff *= vec3(1.)*fre2;
+        amb *= vec3(1.)*fre2;
+        bnc *= vec3(1.)*fre2;
+        sss = vec3(0.);
+        spe = pow(spe, vec3(32.))*500.;
     } 
     if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
