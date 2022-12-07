@@ -1,9 +1,6 @@
 #version 150
-
 out vec4 fragColor;
-
-
-#define AA 1
+#define iResolution vec2(1280.,720.)
 
 //----------------------------------------------------------------------
 // Vertex/Fragment IO
@@ -31,13 +28,8 @@ in float noseSize;
 //----------------------------------------------------------------------
 // KodeLife Shadertoy mimic
 //----------------------------------------------------------------------
-uniform vec2 iResolution;
 uniform float iTime;
-uniform float iTimeDelta;
-uniform int iFrame;
 
-void mainImage(out vec4, in vec2);
-void main(void) { mainImage(fragColor,gl_FragCoord.xy); }
 
 //----------------------------------------------------------------------
 // Maths function
@@ -273,7 +265,6 @@ vec2 sheep(vec3 p) {
         legs = min(legs, cappedCone(pl-vec3(0.,0.,0.), .7, .3, .2));
         clogs = min(clogs, cappedCone(pl-vec3(0.,-0.8,0.), .2, .35, .3));
 
-        
         // Head
         vec3 ph = p + vec3(0., -2., -1.2);
         ph.xz = rot((time*animationSpeed.y - 0.5)*0.25*animationAmp.y+headRot.x) * ph.xz;
@@ -652,51 +643,43 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     return saturate(col);
 }
 
-void mainImage(out vec4 fragColor, in vec2 fragCoord)
+void main()
 {
-    vec2 invRes = vec2(1.) / iResolution.xy;
-    
-    
-    vec3 tot = vec3(0.);
-    for (int i = 0; i < AA; i++)
-    for (int j = 0; j < AA; j++) {
-        vec2 offset = vec2(i, j) / float(AA) - .5;
-        vec2 uv = (fragCoord + offset) * invRes;
-        vec2 v = uv*2.-1.;
-        v.x *= iResolution.x * invRes.y;
+    vec2 invRes = vec2(1.) / iResolution;
+    vec2 uv = (gl_FragCoord.xy) * invRes;
+    vec2 v = uv*2.-1.;
+    v.x *= iResolution.x * invRes.y;
         
-        // Setup ray
-        vec3 ro = camPos;
-        vec3 ta = camTa;
-        vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
+    // Setup ray
+    vec3 ro = camPos;
+    vec3 ta = camTa;
+    vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
         
-        // Trace
-        #if 1
-        float t = fastTrace(ro,rd);
-        #else
-        float t = trace(ro, rd, vec2(1.5, 100.));
-        #endif
-        vec3 p = ro + rd * t;
-        vec3 n = normal(p);
-        vec3 col = shade(ro, rd, p, n, v);
+    // Trace
+    float t = fastTrace(ro,rd);
+    vec3 p = ro + rd * t;
+    vec3 n = normal(p);
+    vec3 col = shade(ro, rd, p, n, v);
         
-        // Excited stars
-        {
-            vec2 p = v*5.;
-            p.x = abs(p.x+.0)-1.5;
-            p.y -= 1.4;
-            p = rot(iTime*5.) * p;
-            col = mix(col, mix(vec3(1.,.8,0.1), vec3(1.), smoothstep(-.1,.5,v.y)), smoothstep(0.,-0.01, star2d(p, 1.7, .5)) * excited);
-        }
-        
-        tot += col;
+    // Excited stars
+    {
+        vec2 p = v*5.;
+        p.x = abs(p.x+.0)-1.5;
+        p.y -= 1.4;
+        p = rot(iTime*5.) * p;
+        col = mix(col, mix(vec3(1.,.8,0.1), vec3(1.), smoothstep(-.1,.5,v.y)), smoothstep(0.,-0.01, star2d(p, 1.7, .5)) * excited);
     }
     
-    tot /= AA*AA;
     
+    // fade in & fade out
+    col *= smoothstep(0.,10., iTime);
+    col = mix(col, vec3(1.), smoothstep(163., 165., iTime));
 
+    // vignetting
+    col /= (1.+pow(length(v),4.)*.1);
     
-    fragColor = vec4(tot,1.) * smoothstep(0., 10., iTime);
+    // gamma correction
+    fragColor = vec4( pow(col, vec3(1./2.2)), 1.);
     
 }
 
@@ -776,12 +759,8 @@ float noise( in vec3 x )
 {
     vec3 p = floor(x);
     vec3 w = fract(x);
-    
-    #if 1
+   
     vec3 u = w*w*w*(w*(w*6.0-15.0)+10.0);
-    #else
-    vec3 u = w*w*(3.0-2.0*w);
-    #endif
     
 
 

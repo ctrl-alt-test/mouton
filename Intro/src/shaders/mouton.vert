@@ -1,8 +1,6 @@
 #version 150
 
 in vec4 a_position;
-in vec3 a_normal;
-in vec2 a_texcoord;
 
 out vec3 sheepPos;
 out vec3 flowerPos;
@@ -24,13 +22,7 @@ out vec3 camTa;
 out float camFocal;
 
 
-uniform vec2 iResolution;
 uniform float iTime;
-uniform float iTimeDelta;
-uniform int iFrame;
-uniform vec4 iMouse;
-uniform vec4 iDate;
-uniform float iSampleRate;
 
 void main(void)
 {
@@ -316,7 +308,6 @@ void main(void)
     } else if (time < 160.) { // Splash
         float time = time-155.;
         
-        
         eyeDir = normalize(vec3(0.,0.,1.));
         sheepPos = vec3(0.,-smoothstep(0.05,0.1,time)*4.5,-22.);
         panelWarningPos = vec3(-5.,0.,-8.);
@@ -329,6 +320,6 @@ void main(void)
         camFocal = 4.;
         
         float fall = smoothstep(.1,0.,time)*13.;
-        anvilPos = vec3(0.,fall,-22.);
+        anvilPos = vec3(0.,fall+0.,-22.);
     }
 }
