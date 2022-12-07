@@ -34,8 +34,8 @@ uniform float iTime;
 //----------------------------------------------------------------------
 // Maths function
 //----------------------------------------------------------------------
-#define saturate(x) clamp(x,0.,1.)
-#define PI 3.141592653589
+
+const float PI = 3.141592653589;
 
 float hash(float p);
 float hash1( vec2 p );
@@ -110,7 +110,7 @@ vec2 blood(vec3 p) {
 
 vec2 anvil(vec3 p) {
     p -= anvilPos;
-    float h = pow(saturate(p.y-1.),.5);
+    float h = pow(clamp(p.y-1.,0.,1.),.5);
     float d = box(p-vec3(0.,1.,0.), vec3(1.5-h,1.,2.5-h));
     if (d<10.) {
         d = min(d, box(p-vec3(0.,3.,0.), vec3(2.,1.,3.)));
@@ -354,7 +354,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.1;
-    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*6.*rnd.y+rnd.z*3.14)*.5+.5)*2.;
+    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*3.*rnd.y+rnd.z*3.14)*.5+.5)*2.;
     
     
     col += moon*smoothstep(.5,-1., sunDir.y);
@@ -374,7 +374,7 @@ float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
         occ += (h-d)*sca;
         sca *= .95;
     }
-    return saturate(1.0 - falloff*1.5*occ);
+    return max(0.,1.0 - falloff*1.5*occ);
 }
 
 vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize, vec3 m) 
@@ -508,9 +508,9 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     ao *= fastAO(p, n, 1., .1)*.5;
     
     float shad = shadow(p, sunDir, .08, 50.);
-    float fre = saturate(1.0+dot(rd,n));
+    float fre = clamp(1.0+dot(rd,n), 0., 1.);
     
-    vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.15,1.25));
+    vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.5,2.));
     vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
     vec3 sss = vec3(.5) * fastAO(p, rd, .3, .5);
     vec3 spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
@@ -629,6 +629,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. + spe*1.)  + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
     //col = diff;//diff + bnc + amb + sss;
     //col = albedo * spe;
+   //col = diff;
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
@@ -640,7 +641,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         col = mix(col,  mix(vec3(1.,0.5,00), vec3(1.,1.,1.0), smoothstep(-r, r, theta)), excited);
     }
 
-    return saturate(col);
+    return clamp(col,0.,1.);
 }
 
 void main()
