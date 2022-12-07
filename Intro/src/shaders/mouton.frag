@@ -676,7 +676,7 @@ void main()
     col = mix(col, vec3(1.), smoothstep(163., 165., iTime));
 
     // vignetting
-    col /= (1.+pow(length(v),4.)*.1);
+    col /= (1.+pow(length(v),3.)*.1);
     
     // gamma correction
     fragColor = vec4( pow(col, vec3(1./2.2)), 1.);

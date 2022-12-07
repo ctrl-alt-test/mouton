@@ -7,10 +7,6 @@ uniform sampler2D prevPass;
 
 
 
-#define FXAA_SPAN_MAX 8.0
-#define FXAA_REDUCE_MUL   (1.0/FXAA_SPAN_MAX)
-#define FXAA_REDUCE_MIN   (1.0/128.0)
-#define FXAA_SUBPIX_SHIFT (1.0/8.0)
 
 vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
     
@@ -34,13 +30,10 @@ vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
     dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
     dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
 
-    float dirReduce = max(
-        (lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),
-        FXAA_REDUCE_MIN);
-    float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
+    float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + (1./128.));
     
-    dir = min(vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),
-          max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
+    dir = min(vec2( 8.,  8.),
+          max(vec2(-8., -8.),
           dir * rcpDirMin)) * rcpFrame.xy;
 
     vec3 rgbA = (1.0/2.0) * (
@@ -61,7 +54,7 @@ void main(void)
 {
     vec2 invRes = 1./iResolution;
     vec2 texcoord = gl_FragCoord.xy * invRes;
-    vec4 uv = vec4( texcoord, texcoord - (invRes * (0.5 + FXAA_SUBPIX_SHIFT)));
+    vec4 uv = vec4( texcoord, texcoord - (invRes * 0.5));
     
     vec3 col = FxaaPixelShader(uv, prevPass, invRes);
     fragColor = vec4(col,1.);
