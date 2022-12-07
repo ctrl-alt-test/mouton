@@ -210,7 +210,7 @@ vec2 sheep(vec3 p) {
     float body = length(p*vec3(1.,1.,.825)-vec3(0.,1.5,2.55)-bodyMove)-2.;
     
     if (body < 3.) {
-        float n = (pow(noise((p-bodyMove)*2.)*.5+.5, .75)*2.-1.);
+        float n = (pow(noise((p-bodyMove-0.1)*2.)*.5+.5, .75)*2.-1.);
         body = body + .05 - n*.2;
 
 
@@ -342,7 +342,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     col = vec3(1.) * night * night;
     
     // mon
-    vec2 moonPos = vec2(cos(iTime*.7+2.3), sin(iTime*.7+2.3) );
+    vec2 moonPos = vec2(cos(iTime*.7+2.3), sin(iTime*.7+2.3)*.75 );
     float moon = smoothstep(0.201,0.2, length(uv-moonPos));
     moon *= smoothstep(0.2,0.201, length(uv-moonPos-vec2(.1,0.025)));
     moon += smoothstep(2.,0., length(uv-moonPos))*.02;
@@ -626,10 +626,12 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         spe = pow(spe, vec3(4.))*fre*.02;
     }
     
-    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. + spe*1.)  + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
+    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. + spe*shad)  + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
     //col = diff;//diff + bnc + amb + sss;
     //col = albedo * spe;
    //col = diff;
+    //col = amb;
+   // col = sss;
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));

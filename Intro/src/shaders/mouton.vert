@@ -315,7 +315,7 @@ void main(void)
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,6.);
         
-        camPos = vec3(16.+sin(time*.1)*3.,5.,-1.) + vec3(cos(iTime*50.))* smoothstep(0.0,0.1,time)* smoothstep(0.3,0.1,time);
+        camPos = vec3(16.+sin(time*.1)*3.,5.,-1.) + vec3(cos(iTime*50.))* smoothstep(0.1,0.2,time)* smoothstep(0.4,0.2,time);
         camTa = vec3(3., 5., -23.);
         camFocal = 4.;
         
