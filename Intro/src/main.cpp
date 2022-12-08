@@ -20,12 +20,14 @@
 #include "shaders/mouton_vert.inl"
 #include "shaders/mouton_frag.inl"
 #include "shaders/fxaa_frag.inl"
+#include "shaders/postprocess_frag.inl"
 
 #pragma data_seg(".pids")
 
 // static allocation saves a few bytes
 static int shaderMain;
 static int shaderFXAA;
+static int shaderPostProcess;
 // static HDC hDC;
 
 #pragma code_seg(".main")
@@ -68,6 +70,16 @@ void entrypoint(void)
 	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderFXAA);
 
 
+	// Post process
+	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
+	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &postprocess_frag, 0);
+	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
+
+	shaderPostProcess = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
+	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderPostProcess, f);
+	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderPostProcess);
+
+
 
 	// main loop
 	long startTime = timeGetTime();
@@ -84,7 +96,7 @@ void entrypoint(void)
 			PeekMessage(0, 0, 0, 0, PM_REMOVE);
 		#endif
 
-		// render with the primary shader
+		// main renderer
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderMain);
 		((PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f"))(0, time);
 		glRects(-1, -1, 1, 1);
@@ -103,7 +115,18 @@ void entrypoint(void)
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
 		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderFXAA);
+		glRects(-1, -1, 1, 1);
+
+		// Post processing
+
+		glBindTexture(GL_TEXTURE_2D, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
+		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
+		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderPostProcess);
 		((PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i"))(0, 0);
+		int loc = ((PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation"))(shaderPostProcess, "iTime");
+		((PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f"))(loc, time);
 		glRects(-1, -1, 1, 1);
 
 		SwapBuffers(hDC);

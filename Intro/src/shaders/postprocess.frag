@@ -2,10 +2,8 @@
 out vec4 fragColor;
 #define iResolution vec2(1280.,720.)
 
-uniform float iTime;
-
-
 uniform sampler2D prevPass;
+uniform float iTime;
 
 vec3 hash3(vec3 p) {
     uvec3 x = uvec3((p)*100000.);
