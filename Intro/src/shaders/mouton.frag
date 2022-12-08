@@ -1,6 +1,6 @@
 #version 150
 out vec4 fragColor;
-#define iResolution vec2(1280.,720.)
+const vec2 iResolution = vec2(1280.,720.);
 
 //----------------------------------------------------------------------
 // Vertex/Fragment IO
@@ -71,21 +71,19 @@ vec3 normal(vec3 p);
 float shadow( vec3 ro, vec3 rd, float mint, float tmax );
 
 // Materials
-#define GROUND 0.
-#define COTON 1.
-#define SKIN 2.
-#define EYE 3.
-#define CLOGS 4.
-#define METAL 5.
-#define PANEL 6.
-#define PANEL_FOOD 7.
-#define PISTIL 8.
-#define PETAL 9.
-#define TIGE 10.
-#define BLACK_METAL 11.
-#define BLOOD 12.
-
-
+const float GROUND = 0.;
+const float COTON = 1.;
+const float SKIN = 2.;
+const float EYE = 3.;
+const float CLOGS = 4.;
+const float METAL = 5.;
+const float PANEL = 6.;
+const float PANEL_FOOD = 7.;
+const float PISTIL = 8.;
+const float PETAL = 9.;
+const float TIGE = 10.;
+const float BLACK_METAL = 11.;
+const float BLOOD = 12.;
 
 vec2 dmin(vec2 a, vec2 b) {
     return a.x<b.x ? a : b;
