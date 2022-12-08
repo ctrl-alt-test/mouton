@@ -359,9 +359,9 @@ shader_minifier.exe -v -o src\shaders\post.inl src\shaders\post.frag</Command>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>shader_minifier.exe --preserve-externals -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
-shader_minifier.exe --preserve-externals -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
-shader_minifier.exe --preserve-externals -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag</Command>
+      <Command>shader_minifier.exe --preserve-externals --aggressive-inlining -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
+shader_minifier.exe --preserve-externals --aggressive-inlining -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
+shader_minifier.exe --preserve-externals --aggressive-inlining -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag</Command>
       <Message>Minify user-supplied shader files.</Message>
     </PreBuildEvent>
   </ItemDefinitionGroup>
