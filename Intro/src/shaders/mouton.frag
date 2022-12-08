@@ -35,7 +35,7 @@ uniform float iTime;
 // Maths function
 //----------------------------------------------------------------------
 
-const float PI = 3.141592653589;
+const float PI = acos(-1.);
 
 float hash(float p);
 float hash1( vec2 p );

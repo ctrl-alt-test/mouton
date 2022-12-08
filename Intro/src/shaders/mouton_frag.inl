@@ -12,7 +12,7 @@ const char *mouton_frag =
  "in vec2 headRot;"
  "in float blink,camFocal,eyesSurprise,excited,fishEyeFactor,noseSize;"
  "uniform float iTime;"
- "const float y=3.141592653589,m=0.,s=1.,x=2.,f=3.,a=4.,l=5.,z=6.,c=7.,p=8.,e=9.,r=10.,d=11.,n=12.;"
+ "const float y=acos(-1.),m=0.,s=1.,x=2.,f=3.,a=4.,l=5.,z=6.,c=7.,p=8.,e=9.,r=10.,d=11.,n=12.;"
  "vec2 h(vec2 v,vec2 y)"
  "{"
    "return v.x<y.x?v:y;"
