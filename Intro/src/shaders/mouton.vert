@@ -2,24 +2,24 @@
 
 in vec4 a_position;
 
+out vec3 animationAmp; //(x = walking, y = head, z = tail)
+out vec3 animationSpeed; //(x = walking, y = head, z = tail)
 out vec3 sheepPos;
 out vec3 flowerPos;
 out vec3 panelPos;
 out vec3 panelWarningPos;
 out vec3 anvilPos;
-out vec2 headRot;
-out vec3 animationAmp; //(x = walking, y = head, z = tail)
-out vec3 animationSpeed; //(x = walking, y = head, z = tail)
-out float fishEyeFactor;
-out float noseSize;
 out vec3 sunDir;
-out float blink;
-out float excited;
-out float eyesSurprise;
-out vec3 eyeDir;
 out vec3 camPos;
 out vec3 camTa;
+out vec3 eyeDir;
+out vec2 headRot;
+out float blink;
 out float camFocal;
+out float eyesSurprise;
+out float excited;
+out float fishEyeFactor;
+out float noseSize;
 
 
 uniform float iTime;
