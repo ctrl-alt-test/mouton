@@ -1,4 +1,4 @@
-/* File generated with Shader Minifier 1.2
+/* File generated with Shader Minifier 1.3.1
  * http://www.ctrl-alt-test.fr
  */
 #ifndef MOUTON_VERT_INL_
