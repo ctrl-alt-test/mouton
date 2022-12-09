@@ -1,6 +1,6 @@
 #version 150
 out vec4 fragColor;
-#define iResolution vec2(1280.,720.)
+const vec2 iResolution = vec2(1280.,720.);
 
 uniform sampler2D prevPass;
 uniform float iTime;
