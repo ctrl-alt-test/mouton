@@ -626,6 +626,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     }
     
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. + spe*shad)  + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
+    col = clamp(col,0.,1.);
     //col = diff;//diff + bnc + amb + sss;
     //col = albedo * spe;
    //col = diff;
