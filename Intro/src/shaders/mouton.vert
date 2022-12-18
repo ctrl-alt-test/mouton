@@ -121,15 +121,14 @@ void main(void)
         camFocal = 3.;
     } else if (time < 65.) { // Excited!
         float time = time-58.;
-        float transition = smoothstep(0.,.25,time);
+        excited = smoothstep(0.,.25,time);
         
         animationAmp = vec3(0.,0.,0.);
         blink = 0.;
         eyeDir = normalize(vec3(.3,0.,1.));
-        camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), transition);
+        camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), excited);
         camTa = vec3(0., 3., 0.);
-        camFocal = mix(4., 3., transition);
-        excited = transition;
+        camFocal = mix(4., 3., excited) + smoothstep(0.,7.,time)*.5;
     } else if (time < 75.) { // Panel run
         float time = time-65.;
         eyeDir = normalize(vec3(0.,0.,1.));

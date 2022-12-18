@@ -316,6 +316,7 @@ vec2 sheep(vec3 p) {
 }
 
 
+
 vec2 map(vec3 p) {
     vec2 dmat = vec2(p.y, GROUND);
     
@@ -638,8 +639,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
 
     // Excited background
     if(dmat.y == GROUND) {
-        float theta = cos(atan(uv.x, uv.y)*15.+iTime);
-        float r = length(uv)*.3;
+        float theta = cos(atan(uv.x, uv.y)*15.+iTime*3.);
+        float r = length(uv)*.5;
         col = mix(col,  mix(vec3(1.,0.5,00), vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited);
     }
 
@@ -667,10 +668,13 @@ void main()
     // Excited stars
     {
         vec2 p = v*5.;
-        p.x = abs(p.x+.0)-1.5;
+        p.x = abs(p.x-.3)-1.5;
         p.y -= 1.4;
         p = rot(iTime*5.) * p;
-        col = mix(col, mix(vec3(1.,.5,0.), vec3(1.,.9,.5), smoothstep(-.1,.6,v.y))*1.3, smoothstep(0.,-0.01, star2d(p, 1.7, .5)) * excited);
+        float size = 1.4+0.2*sin(iTime*20.);
+        float star = star2d(p, size, .5);
+        vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
+        col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);
     }
     
 
