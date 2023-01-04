@@ -24,6 +24,8 @@ out float noseSize;
 
 uniform float iTime;
 
+const float INFINITE = 9e7;
+
 void main(void)
 {
     gl_Position = a_position;
@@ -32,10 +34,10 @@ void main(void)
     
     // Default stuff
     sheepPos = vec3(0.);
-    panelPos = vec3(9999.);
-    flowerPos = vec3(9999.);
-    panelWarningPos = vec3(9999.);
-    anvilPos = vec3(9999.);
+    panelPos = vec3(INFINITE);
+    flowerPos = vec3(INFINITE);
+    panelWarningPos = vec3(INFINITE);
+    anvilPos = vec3(INFINITE);
     camFocal = 2.;
     blink = max(fract(iTime*.333), fract(iTime*.123+.1));
     excited = 0.;
@@ -113,7 +115,7 @@ void main(void)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
     } else if (time < 58.) { // Panel food!
         float time = time-55.;
-        sheepPos = vec3(9999.);
+        sheepPos = vec3(INFINITE);
         panelPos = vec3(0.);
         camPos = vec3(10.,3.,5.);
         float transition = smoothstep(0.0,.25,time);
@@ -246,7 +248,7 @@ void main(void)
 
     } else if (time < 130.) { // sign -> flower
         float time = time-122.;
-        sheepPos = vec3(9999.);
+        sheepPos = vec3(INFINITE);
         panelWarningPos = vec3(-2.,0.,-8.);
         flowerPos = vec3(4.,0.,-20.);
         

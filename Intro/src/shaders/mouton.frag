@@ -36,6 +36,7 @@ uniform float iTime;
 //----------------------------------------------------------------------
 
 const float PI = acos(-1.);
+const float INFINITE = 9e7;
 
 float hash(float p);
 float hash1( vec2 p );
@@ -102,7 +103,7 @@ vec2 blood(vec3 p) {
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
     if (d < .4) return vec2(d-(noise(p*3.5)*.5+.5)*.3, BLOOD);
-    else return vec2(9999., GROUND);
+    else return vec2(INFINITE, GROUND);
 }
 
 
@@ -121,7 +122,7 @@ vec2 anvil(vec3 p) {
         
         return dmat;
     } else {
-        return vec2(9999999.,GROUND);
+        return vec2(INFINITE,GROUND);
     }
 }
 
@@ -150,7 +151,7 @@ vec2 flower(vec3 p) {
         
         return dmat;
     }
-    return vec2(999999., GROUND);
+    return vec2(INFINITE, GROUND);
 }
 
 vec2 panelFood(vec3 p) {
@@ -169,7 +170,7 @@ vec2 panelFood(vec3 p) {
         dmat = dmin(dmat, vec2(pan,PANEL_FOOD));
         return dmat;
     }else {
-        return vec2(999999., GROUND);
+        return vec2(INFINITE, GROUND);
     }
 }
 vec2 panelWarning(vec3 p) {
@@ -188,7 +189,7 @@ vec2 panelWarning(vec3 p) {
         dmat = dmin(dmat, vec2(pan,PANEL));
         return dmat;
     } else {
-        return vec2(999999., GROUND);
+        return vec2(INFINITE, GROUND);
     }
 }
 
@@ -392,7 +393,7 @@ vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize, vec3 m)
 float fastTrace(vec3 ro, vec3 rd) {
 
     vec3 m = 1.0/rd;
-    float result = 9999.;
+    float result = INFINITE;
     
     // Sheep intersection
     vec2 nf = boxIntersection(ro-sheepPos-vec3(0.,3.,-2.),rd, vec3(3.,3.,7.), m);
