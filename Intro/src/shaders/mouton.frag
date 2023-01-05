@@ -102,14 +102,14 @@ vec2 blood(vec3 p) {
     p.xz -= anvilPos.xz;
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
-    if (d < .4) return vec2(d-(noise(p*3.5)*.5+.5)*.3, BLOOD);
+    if (d < .4) return vec2(d-(noise(p*3.5)*.5+.5)*.25*(1.-exp(-(iTime-155.)*10.)), BLOOD);
     else return vec2(INFINITE, GROUND);
 }
 
 
 vec2 anvil(vec3 p) {
     p -= anvilPos;
-    float h = pow(clamp(p.y-1.,0.,1.),.5);
+    float h = pow(clamp(p.y-1.,0.004,1.),.5);
     float d = box(p-vec3(0.,1.,0.), vec3(1.5-h,1.,2.5-h));
     if (d<10.) {
         d = min(d, box(p-vec3(0.,3.,0.), vec3(2.,1.,3.)));
@@ -352,7 +352,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.1;
-    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*1.*rnd.y+rnd.z*3.14)*.5+.5)*3.;
+    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*1.*rnd.y+rnd.z*3.14)*.5+.5)*1.;
     
     
     col += moon*smoothstep(.5,-1., sunDir.y);
@@ -610,15 +610,15 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         amb *= vec3(.1)*fre;
         bnc *= vec3(0.0)*fre;
         sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*4.;
+        spe = pow(spe, vec3(100.))*fre*2.;
     }  else if(dmat.y == BLOOD) {
-        albedo = vec3(1.,.01,.01)*.5;
+        albedo = vec3(1.,.01,.01)*.7;
         float fre2 = fre*fre;
-        diff *= vec3(1.)*fre;
-        amb *= vec3(1.)*fre;
-        bnc *= vec3(1.)*fre;
-        sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*1.;
+        diff *= vec3(3.);
+        amb *= vec3(1.)*fre2;
+        bnc *= vec3(1.);
+        sss *= vec3(.0);
+        spe = vec3(1.,.5,.5) * pow(spe, vec3(500.))*3.;
     } 
     if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
@@ -679,7 +679,7 @@ void main()
     
 
     // vignetting
-    col /= (1.+pow(length(v),3.)*.05);
+    col /= (1.+pow(length(uv*2.-1.),8.)*.04);
     
     // gamma correction
     fragColor = vec4( pow(col, vec3(1./2.2)), 1.);

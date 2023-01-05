@@ -309,8 +309,9 @@ void main(void)
         flowerPos = vec3(2.,0.,-30.);
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
-        camPos = vec3(16.,5.,9.-time);
-        camTa = vec3(3., 5., -3.-time*2.);
+        float t = smoothstep(0., 10., time);
+        camPos = vec3(-20.,mix(2.,8.,t),mix(-10.,-13., t));
+        camTa = vec3(3., 2, -3.-time*2.);
         camFocal = 3.+time*.1;
     } else if (time < 160.) { // Splash
         float time = time-155.;
@@ -322,8 +323,8 @@ void main(void)
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
         
-        camPos = vec3(16.+sin(time*.1)*3.,5.,-1.) + vec3(cos(iTime*50.))* smoothstep(0.1,0.2,time)* smoothstep(0.4,0.2,time);
-        camTa = vec3(3., 5., -23.);
+        camPos = vec3(-20.,6.,-13.) + vec3(cos(time*72.),cos(time*64.),sin(time*48.))*3.* smoothstep(0.0,0.2,time)* smoothstep(0.6,0.2,time);
+        camTa = vec3(3., 2., -23.);
         camFocal = 4.;
         
         float fall = smoothstep(.1,0.,time)*13.;
