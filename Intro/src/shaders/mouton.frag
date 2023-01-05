@@ -156,14 +156,11 @@ vec2 flower(vec3 p) {
 
 vec2 panelFood(vec3 p) {
     p -= panelPos;
-    float pan = box(p-vec3(0.,7.5,-5.), vec3(1.,1., 0.1));
+    float pan = box(p-vec3(0.,7.5,-5.), vec3(.8,0.8, 0.1))-.2;
     if (pan < 7.) {
-        pan = smax(pan, -box(p-vec3(0.,7.5,-5.1), vec3(.9,.9,.1)), .001);
+        pan = max(pan, (abs(p.z+5.)-.1));
     
-        float tube = box(p-vec3(0.,4.,-5.1), vec3(.1,4.,.1));
-        vec3 pp = p;
-        pp.y = abs(pp.y-7.3)-.3;
-        tube = min(tube, box(pp-vec3(0.,0.,-5.05), vec3(.35,.1,.05)));
+        float tube = box(p-vec3(0.,4.,-5.1), vec3(.11,4.,.08));
         
         
         vec2 dmat = vec2(tube, METAL);
@@ -179,7 +176,7 @@ vec2 panelWarning(vec3 p) {
     if (pan < 8.) {
         pan = smax(pan, -triangle(p-vec3(0.,7.5,-5.1), vec2(1.6,.1), .3), .001);
         
-        float tube = box(p-vec3(0.,4.,-5.1), vec3(.1,4.,.1));
+        float tube = box(p-vec3(0.,4.,-5.1), vec3(.11,4.,.08));
         vec3 pp = p;
         pp.y = abs(pp.y-7.3)-.3;
         tube = min(tube, box(pp-vec3(0.,0.,-5.05), vec3(.35,.1,.05)));
@@ -342,7 +339,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     col = vec3(1.) * night * night;
     
     // mon
-    vec2 moonPos = vec2(cos(iTime*.7+2.3), sin(iTime*.7+2.3)*.75 );
+    vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
     float moon = smoothstep(0.201,0.2, length(uv-moonPos));
     moon *= smoothstep(0.2,0.201, length(uv-moonPos-vec2(.1,0.025)));
     moon += smoothstep(.5,0., length(uv-moonPos-vec2(-.05,0.0)))*.05;
@@ -355,7 +352,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.1;
-    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*3.*rnd.y+rnd.z*3.14)*.5+.5)*2.;
+    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*1.*rnd.y+rnd.z*3.14)*.5+.5)*3.;
     
     
     col += moon*smoothstep(.5,-1., sunDir.y);
@@ -509,11 +506,11 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     ao *= fastAO(p, n, 1., .1)*.5;
     
     float shad = shadow(p, sunDir, .08, 50.);
-    float fre = clamp(1.0+dot(rd,n), 0., 1.);
+    float fre = clamp(1.0+dot(rd,n), 0., 5.);
     
-    vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.5,2.));
+    vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.2,1.5));
     vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
-    vec3 sss = vec3(.5) * fastAO(p, rd, .3, .5);
+    vec3 sss = vec3(.5) * mix(fastAO(p, rd, .3, .75), fastAO(p, sunDir, .3, .75), 0.5);
     vec3 spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
     
     //sss = vec3(1.) * calcSSS(p,rd);
@@ -529,19 +526,21 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = vec3(.4);
         sss *= vec3(1.) *(fre*.5+.5);
         emi = vec3(.35);
-        spe = pow(spe, vec3(4.))*fre*.5;
+        spe = pow(spe, vec3(4.))*fre*.25;
     } else if (dmat.y == CLOGS) {
         albedo = vec3(.025);
         sss = vec3(0.);
-        spe = vec3(0.);
+        spe = pow(spe, vec3(80.))*fre*10.;
     } else if (dmat.y == EYE) {
-        sss *= .7;
+        sss *= .5;
         albedo = vec3(1.);
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
-        albedo *= smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
+        float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
+        albedo *= pupil;
+        spe *= pupil;
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
-        spe = pow(spe, vec3(80.))*fre;
+        spe = pow(spe, vec3(80.))*fre*3.;
     } else if(dmat.y == METAL) {
         albedo = vec3(1.);
         sss = vec3(0.);
@@ -549,13 +548,13 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     } else if(dmat.y == PANEL) {
         vec3 p = p-panelWarningPos;
         sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*2.;
+        spe = pow(spe, vec3(8.))*fre*10.;
         
         if (n.z > .5) {
-            albedo = vec3(1.5,0.,0.);
             float tri = triangle(p-vec3(0.,7.5,-5.), vec2(1.3,.2), .01);
-            float symbol = smoothstep(0.15,0.1495, distance(p,vec3(0.,7.1,-4.9)));
-            symbol += smoothstep(0.005,0.,UnevenCapsule2d(p.xy-vec2(0.,7.4), .06,.12,1.));
+            albedo = vec3(1.5,0.,0.);
+            float symbol = smoothstep(0.13,0.1295, distance(p,vec3(0.,7.1,-4.9)));
+            symbol += smoothstep(0.005,0.,UnevenCapsule2d(p.xy-vec2(0.,7.34), .06,.14,1.));
             albedo = mix(albedo, vec3(2.), smoothstep(0.005,.0, tri));
             albedo = mix(albedo, vec3(0.), symbol);
         } else {
@@ -564,7 +563,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     } else if(dmat.y == PANEL_FOOD) {
         vec3 p = p-panelPos;
         sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*2.;
+        spe = pow(spe, vec3(8.))*fre*10.;
         if (n.z > .5) {
             albedo = vec3(0.,0.,1.5);
             p.y -= 7.4;
@@ -607,28 +606,28 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         spe = pow(spe, vec3(4.))*fre*1.0;
     } else if(dmat.y == BLACK_METAL) {
         albedo = vec3(1.);
-        diff *= vec3(.25)*fre;
-        amb *= vec3(.25)*fre;
-        bnc *= vec3(0.25)*fre;
+        diff *= vec3(.1)*fre;
+        amb *= vec3(.1)*fre;
+        bnc *= vec3(0.0)*fre;
         sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*2.;
+        spe = pow(spe, vec3(8.))*fre*4.;
     }  else if(dmat.y == BLOOD) {
-        albedo = vec3(1.,.01,.01);
+        albedo = vec3(1.,.01,.01)*.5;
         float fre2 = fre*fre;
-        diff *= vec3(1.)*fre2;
-        amb *= vec3(1.)*fre2;
-        bnc *= vec3(1.)*fre2;
+        diff *= vec3(1.)*fre;
+        amb *= vec3(1.)*fre;
+        bnc *= vec3(1.)*fre;
         sss = vec3(0.);
-        spe = pow(spe, vec3(32.))*500.;
+        spe = pow(spe, vec3(8.))*1.;
     } 
     if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
-        sss = pow(sss, vec3(.5,2.5,8.0)+2.)*2.;// * fre;// * pow(fre, 1.);
+        amb *= vec3(1.,.75,.75);
+        sss = pow(sss, vec3(.5,2.5,5.0)+2.)*2.;// * fre;// * pow(fre, 1.);
         spe = pow(spe, vec3(4.))*fre*.02;
     }
     
-    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. + spe*shad)  + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
-    col = clamp(col,0.,1.);
+    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
     //col = diff;//diff + bnc + amb + sss;
     //col = albedo * spe;
    //col = diff;
