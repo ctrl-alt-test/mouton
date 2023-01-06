@@ -71,10 +71,13 @@ void main(void)
     float luminance = dot(col, vec3(0.2126,0.7152,0.0722));
     col += (grain) * (1.-pow(luminance,.5)) * .05;
     
-    // fade in & fade out
+    // fade in
     col *= smoothstep(0.,10., iTime);
-    col = mix(col, vec3(1.), smoothstep(158., 160., iTime));
-    
+
+    // Circle to black
+    float t = smoothstep(160., 158., iTime);
+    float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
+    col *= smoothstep(t, t-.005, circle);
     
     fragColor = vec4(col,1.);
 }
