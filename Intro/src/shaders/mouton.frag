@@ -689,7 +689,7 @@ void main()
     
 
     // vignetting
-    col /= (1.+pow(length(uv*2.-1.),8.)*.04);
+    col /= (1.+pow(length(uv*2.-1.),4.)*.04);
     
     // gamma correction
     fragColor = vec4( pow(col, vec3(1./2.2)), 1.);

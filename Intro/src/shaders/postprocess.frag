@@ -5,6 +5,7 @@ const vec2 iResolution = vec2(1280.,720.);
 uniform sampler2D prevPass;
 uniform float iTime;
 
+/*
 vec3 hash3(vec3 p) {
     uvec3 x = uvec3((p)*100000.);
     const uint k = 1103515245U; 
@@ -49,10 +50,9 @@ float simplex3d(vec3 p) {
      w *= w;
      d *= w;
      
-     /* 3. return the sum of the four surflets */
      return dot(d, vec4(52.0));
 }
-
+*/
 
 void main(void)
 {
@@ -67,12 +67,14 @@ void main(void)
     col.b = texture(prevPass,uv-offset).b;
     
     // filmic grain
+    /*
     vec3 grain = vec3(simplex3d(vec3( gl_FragCoord.xy * invRes.y * 250., iTime*5.)));
     float luminance = dot(col, vec3(0.2126,0.7152,0.0722));
-    col += (grain) * (1.-pow(luminance,.5)) * .05;
+    col += (grain) * (1.-pow(luminance,.25)) * .1;
+    */
     
     // fade in
-    col *= smoothstep(0.,10., iTime);
+    col *= smoothstep(0.,5., iTime);
 
     // Circle to black
     float t = smoothstep(160., 158., iTime);
