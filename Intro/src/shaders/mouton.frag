@@ -272,8 +272,17 @@ vec2 sheep(vec3 p) {
         float head = length(ph-vec3(0.,-1.3,-1.2)) - 1.;
         head = smin(head, length(ph-vec3(0.,0.,0.)) - .5, 1.8);
 
-        // ears
+
+        // hair 
         vec3 pp = ph;
+        pp *= vec3(.7,1.,.7);
+        float hair = length(ph-vec3(0.,0.35,-0.1))-.55;
+        hair -= (cos(ph.z*8.+ph.y*4.5+ph.x*4.)+cos(ph.z*4.+ph.y*6.5+ph.x*8.))*.05;
+        //hair -= (pow(noise(ph*3.+1.)*.5+.5, .75)*2.-1.)*.1;
+        hair = smin(hair, body, 0.1);
+        
+        // ears
+        pp = ph;
         pp.yz = rot(-.6) * pp.yz;
         pp.x = abs(p.x)-.8;
         pp *= vec3(.3,1.,.4);
@@ -293,16 +302,15 @@ vec2 sheep(vec3 p) {
 
 
 
-        // hair & tail
-        pp = p;
-        pp *= vec3(.7,1.,.7);
-        float hairTail = length(pp-vec3(0.,2.4,0.7))-.4;
-        hairTail = smin(hairTail, capsule(p-vec3(0.,0.,cos(p.y-.7)*.5),vec3(cos(iTime*animationSpeed.z)*animationAmp.z,.2,5.), vec3(0.,2.,4.9), .2), 0.2);
-        hairTail -= (pow(noise(p*2.)*.5+.5, .75)*2.-1.)*.1;
-
+        // tail
+        float tail =  capsule(p-vec3(0.,-.1,cos(p.y-.7)*.5),vec3(cos(iTime*animationSpeed.z)*animationAmp.z,.2,5.), vec3(0.,2.,4.9), .2);
+        tail -= (cos(p.z*8.+p.y*4.5+p.x*4.)+cos(p.z*4.+p.y*6.5+p.x*3.))*.02;
+        tail = smin(body, tail, .1);
+        
         // Union
         vec2 dmat = vec2( body, COTON);
-        dmat = dmin(dmat, vec2( hairTail, COTON));
+        dmat = dmin(dmat, vec2(tail, COTON));
+        dmat = dmin(dmat, vec2(hair, COTON));
         dmat = dmin(dmat, vec2(legs, SKIN));
         dmat = dmin(dmat, vec2(head, SKIN));
         dmat = dmin(dmat, vec2(eyes, EYE));
