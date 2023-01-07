@@ -351,8 +351,8 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     
     // mon
     vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
-    float moon = smoothstep(0.201,0.2, length(uv-moonPos));
-    moon *= smoothstep(0.2,0.201, length(uv-moonPos-vec2(.1,0.025)));
+    float moon = smoothstep(0.151,0.15, length(uv-moonPos));
+    moon *= smoothstep(0.15,0.1501, length(uv-moonPos-vec2(.1,0.025)));
     moon += exp(-length(uv-moonPos)*2.)*.1;
     moon *= smoothstep(.5,.0, sunDir.y);
     
