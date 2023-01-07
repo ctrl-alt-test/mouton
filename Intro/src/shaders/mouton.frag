@@ -102,7 +102,10 @@ vec2 blood(vec3 p) {
     p.xz -= anvilPos.xz;
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
-    if (d < .4) return vec2(d-(noise(p*3.5)*.5+.5)*.25*(1.-exp(-(iTime-155.)*10.)), BLOOD);
+    if (d < .4) {
+        d -= pow((noise(p*.7+1.)*.5+noise(p*1.7+100.)*.3+noise(p*2.7+100.)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-155.)*4.))+.03;
+        return vec2(d, BLOOD);
+    }
     else return vec2(INFINITE, GROUND);
 }
 
@@ -612,13 +615,13 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         sss = vec3(0.);
         spe = pow(spe, vec3(100.))*fre*2.;
     }  else if(dmat.y == BLOOD) {
-        albedo = vec3(1.,.01,.01)*.7;
+        albedo = vec3(1.,.01,.01)*.3;
         float fre2 = fre*fre;
         diff *= vec3(3.);
-        amb *= vec3(1.)*fre2;
+        amb *= vec3(2.)*fre2;
         bnc *= vec3(1.);
         sss *= vec3(.0);
-        spe = vec3(1.,.5,.5) * pow(spe, vec3(500.))*3.;
+        spe = vec3(1.,.3,.3) * pow(spe, vec3(500.))*5.;
     } 
     if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
