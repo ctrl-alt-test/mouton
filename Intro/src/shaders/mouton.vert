@@ -115,12 +115,21 @@ void main(void)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
     } else if (time < 58.) { // Panel food!
         float time = time-55.;
-        sheepPos = vec3(INFINITE);
-        panelPos = vec3(0.);
-        camPos = vec3(10.,3.,5.);
-        float transition = smoothstep(0.0,.25,time);
-        camTa = mix(vec3(-3.,3.,20.), vec3(2., 3.8, 0.), transition);
-        camFocal = 3.;
+        sheepPos = vec3(0.);
+        panelPos = vec3(-5.,0.,-8.);
+        
+        eyeDir = normalize(vec3(.3,.0,1.));
+        eyesSurprise = .2;
+        animationAmp = vec3(0.,0.0, 1.); // Slow walk
+        animationSpeed = vec3(3.,1.5,6.);
+        
+        
+        float transition = smoothstep(0.,.5,time);
+        
+        camFocal = mix(4., 3., transition);
+        camPos = vec3(0.,3., -4.);
+        
+        camTa = mix(vec3(0., 3., 0.), vec3(-5., 5., -9.), transition);
     } else if (time < 65.) { // Excited!
         float time = time-58.;
         excited = smoothstep(0.,.25,time);
@@ -139,7 +148,7 @@ void main(void)
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
         camPos = vec3(16.,5.,9.);
-        camTa = vec3(3., 5., -4.-time);
+        camTa = vec3(3., 5., -2.-time);
         camFocal = 3.;
     } else if (time < 85.) // Head exciting search
     {
@@ -155,7 +164,7 @@ void main(void)
         fishEyeFactor = .3;
         camFocal = 2.5;
         camPos = vec3(2.75,1., -5.25);
-        camTa = vec3(0., 2.4, 0.);
+        camTa = vec3(0., 2.3, 0.);
         
         float t = mod(time, 2.);
         noseSize += smoothstep(0.5,.6,t)*smoothstep(0.7,.6,t)*.3;
@@ -200,7 +209,7 @@ void main(void)
         
         eyeDir = normalize(mix(vec3(1.,-.5,1.), vec3(0.,.5,1.), smoothstep(2.5,4., time))); // Tired
         headRot.y = smoothstep(3.,5., time)*.5;
-        headRot.x = smoothstep(4.,8., time)*.25*sin(time*3.);
+        headRot.x = smoothstep(3.,5., time)*smoothstep(8.,5., time)*.25*sin(time*3.);
         animationAmp = vec3(1.,.2,.5);
         animationSpeed = vec3(0.,.2,1.);
         camPos = vec3(-3.,4.8,-30.);
@@ -323,9 +332,9 @@ void main(void)
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
         
-        camPos = vec3(-20.,6.,-13.) + vec3(cos(time*72.),cos(time*64.),sin(time*48.))*3.* smoothstep(0.0,0.2,time)* smoothstep(0.6,0.2,time);
+        camPos = vec3(-20.,6.,-13.) + vec3(cos(time*72.),cos(time*64.),sin(time*48.))*3.* smoothstep(0.09,0.1,time)* smoothstep(0.7,0.1,time);
         camTa = vec3(3., 2., -23.);
-        camFocal = 4.;
+        camFocal = mix(4.,4.2, smoothstep(0.,5.,time));
         
         float fall = smoothstep(.1,0.,time)*13.;
         anvilPos = vec3(0.,fall+0.,-22.);
