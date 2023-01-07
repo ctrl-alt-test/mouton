@@ -72,14 +72,27 @@ void main(void)
     float luminance = dot(col, vec3(0.2126,0.7152,0.0722));
     col += (grain) * (1.-pow(luminance,.25)) * .1;
     */
-    
+
     // fade in
-    col *= smoothstep(0.,5., iTime);
+    col *= smoothstep(0.,10., iTime);
+    
+    const float endTime = 160.;
 
     // Circle to black
-    float t = smoothstep(160., 158., iTime);
     float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
+    float t = max(.137, smoothstep(endTime+1., endTime, iTime));
     col *= smoothstep(t, t-.005, circle);
     
+    // Looney tunes
+    float f = circle;
+    float alpha = smoothstep(0.135, .136, f) * smoothstep(endTime+1., endTime+2., iTime);
+    f = fract(23. * pow(f, .25));
+    f -= smoothstep(0.95, 0.99, f);
+    vec3 col2 = mix(vec3(1.,.6,.0), vec3(1.,.0,0.), pow(f,1.));
+    col = mix(col, col2, alpha);
+    
+    // Fade out
+    col *= smoothstep(endTime+5., endTime+4., iTime);
+
     fragColor = vec4(col,1.);
 }

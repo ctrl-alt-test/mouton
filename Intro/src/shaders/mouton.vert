@@ -300,7 +300,6 @@ void main(void)
         animationAmp = vec3(0.0,.1,0.);
         animationSpeed = vec3(0.,.5,0.);
 
-        int iTime = int(time);
         camPos = vec3(0.,2.4, -8.);
         camTa = vec3(0., 3., 0.);
 
@@ -338,5 +337,18 @@ void main(void)
         
         float fall = smoothstep(.1,0.,time)*13.;
         anvilPos = vec3(0.,fall+0.,-22.);
+
+    } else { // ending screen
+        float time = time-160.;
+        
+        eyeDir = normalize(vec3(0.,0.,1.));
+        sheepPos = vec3(INFINITE);
+        panelWarningPos = vec3(0.,0.,-8.);
+        flowerPos = vec3(2.,0.,-30.);
+        
+        camTa = vec3(-1., 3., -23.);
+        camPos = vec3(18.,5.,15.);
+        camFocal = 2.5;
+        anvilPos = vec3(0.,0.,-22.);    
     }
 }
