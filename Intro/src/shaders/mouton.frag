@@ -103,7 +103,7 @@ vec2 blood(vec3 p) {
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
     if (d < .4) {
-        d -= pow((noise(p*.7+1.)*.5+noise(p*1.7+100.)*.3+noise(p*2.7+100.)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-155.)*4.))+.03;
+        d -= pow((noise(p*.7+1.)*.5+noise(p*1.7+100.)*.3+noise(p*2.7+100.)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-150.)*4.))+.03;
         return vec2(d, BLOOD);
     }
     else return vec2(INFINITE, GROUND);
@@ -112,6 +112,7 @@ vec2 blood(vec3 p) {
 
 vec2 anvil(vec3 p) {
     p -= anvilPos;
+    p.xz = rot(1.)*p.xz;
     float h = pow(clamp(p.y-1.,0.004,1.),.5);
     float d = box(p-vec3(0.,1.,0.), vec3(1.5-h,1.,2.5-h));
     if (d<10.) {
@@ -465,7 +466,8 @@ float fastTrace(vec3 ro, vec3 rd) {
     
     // Anvil
     {
-        vec2 nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(2.2,3.,5.2), m);
+        // TODO: the 2nd vec3 is very approximative.
+        vec2 nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(4.,4.,5.), m);
         if (nf.y>0.) {
             float t = max(nf.x,0.);
             for(int i=0; i<128; i++) {
@@ -682,6 +684,7 @@ void main()
         p.y -= 1.4;
         p = rot(iTime*5.) * p;
         float size = 1.4+0.2*sin(iTime*20.);
+        size *= smoothstep(0.5,1.,excited);
         float star = star2d(p, size, .5);
         vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
         col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);

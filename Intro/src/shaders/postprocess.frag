@@ -76,7 +76,7 @@ void main(void)
     // fade in
     col *= smoothstep(0.,10., iTime);
     
-    const float endTime = 161.;
+    const float endTime = 156.;
 
     // Circle to black
     float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
@@ -92,7 +92,6 @@ void main(void)
     col = mix(col, col2, alpha);
     
     // Fade out
-    col *= smoothstep(endTime+5., endTime+4., iTime);
-
+    col *= smoothstep(endTime+6., endTime+5., iTime);
     fragColor = vec4(col,1.);
 }
