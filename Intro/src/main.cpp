@@ -17,10 +17,7 @@
 
 #include "glext.h"
 #pragma data_seg(".shader")
-#include "shaders/mouton_vert.inl"
-#include "shaders/mouton_frag.inl"
-#include "shaders/fxaa_frag.inl"
-#include "shaders/postprocess_frag.inl"
+#include "shaders/shaders.inl"
 
 #pragma data_seg(".pids")
 
@@ -125,7 +122,7 @@ void entrypoint(void)
 		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderPostProcess);
 		((PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i"))(0, 0);
-		int loc = ((PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation"))(shaderPostProcess, "iTime");
+		int loc = ((PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation"))(shaderPostProcess, VAR_iTime);
 		((PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f"))(loc, time);
 		glRects(-1, -1, 1, 1);
 

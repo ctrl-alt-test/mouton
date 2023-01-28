@@ -191,11 +191,8 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\postprocess_frag.inl src\shaders\postprocess.frag</Command>
       <Message>Minify user-supplied shader files.</Message>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Editor|Win32'">
@@ -241,7 +238,7 @@ shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>winmm.lib;opengl32.lib;src/4klang/4klang.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>out/leviathan-debug.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -269,11 +266,8 @@ shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\postprocess_frag.inl src\shaders\postprocess.frag</Command>
       <Message>Minify user-supplied shader files.</Message>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -362,11 +356,8 @@ shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\postprocess_frag.inl src\shaders\postprocess.frag</Command>
       <Message>Minify user-supplied shader files.</Message>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Heavy Release|Win32'">
@@ -458,11 +449,8 @@ shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\postprocess_frag.inl src\shaders\postprocess.frag</Command>
       <Message>Minify user-supplied shader files.</Message>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Snapshot|Win32'">
@@ -560,11 +548,8 @@ shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_frag.inl src\shaders\mouton.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\mouton_vert.inl src\shaders\mouton.vert
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\fxaa_frag.inl src\shaders\fxaa.frag
-shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders\postprocess_frag.inl src\shaders\postprocess.frag</Command>
       <Message>Minify user-supplied shader files.</Message>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -581,13 +566,10 @@ shader_minifier.exe --aggressive-inlining --preserve-externals -v -o src\shaders
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\fxaa.frag" />
-    <None Include="src\shaders\fxaa_frag.inl" />
     <None Include="src\shaders\mouton.frag" />
     <None Include="src\shaders\mouton.vert" />
-    <None Include="src\shaders\mouton_frag.inl" />
-    <None Include="src\shaders\mouton_vert.inl" />
     <None Include="src\shaders\postprocess.frag" />
-    <None Include="src\shaders\postprocess_frag.inl" />
+    <None Include="src\shaders\shaders.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

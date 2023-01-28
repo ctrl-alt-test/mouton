@@ -8,6 +8,7 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
+		Editor|Win32 = Editor|Win32
 		Heavy Release|Win32 = Heavy Release|Win32
 		Release|Win32 = Release|Win32
 		Snapshot|Win32 = Snapshot|Win32
@@ -15,6 +16,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Debug|Win32.ActiveCfg = Debug|Win32
 		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Debug|Win32.Build.0 = Debug|Win32
+		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Editor|Win32.ActiveCfg = Editor|Win32
+		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Editor|Win32.Build.0 = Editor|Win32
 		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Heavy Release|Win32.ActiveCfg = Heavy Release|Win32
 		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Heavy Release|Win32.Build.0 = Heavy Release|Win32
 		{59C1D4F3-AE93-4A0A-B4FE-60841CA865E5}.Release|Win32.ActiveCfg = Release|Win32
