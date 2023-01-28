@@ -402,84 +402,37 @@ float fastTrace(vec3 ro, vec3 rd) {
 
     vec3 m = 1.0/rd;
     float result = INFINITE;
-    
+
+    vec2 nf;
+    vec3 p;
+#define X(n,R,D) \
+    if (n.y>0.) {\
+        float t = max(n.x,0.);\
+        for(int i=0; i<128; i++) {\
+            float d = D;\
+            t += d;\
+            if (t > n.y) break;\
+            if (abs(d) < 0.001) break;\
+        }\
+        if (t < n.y)\
+            R = t;\
+    }
+  
     // Sheep intersection
     vec2 nf = boxIntersection(ro-sheepPos-vec3(0.,3.,-2.),rd, vec3(3.,3.,7.), m);
-    if (nf.y>0.) {
-        float t = max(nf.x,0.);
-        for(int i=0; i<128; i++) {
-            vec3 p = ro + rd * t;
-            float d = dmin(vec2(p.y,GROUND),sheep(p)).x; // BUGS : at 23secondes without ground SDF ?!
-            t += d;
-            if (t > nf.y) break;
-            if (abs(d) < 0.001) break;
-        }
-        if (t < nf.y)
-            result = t; 
-    }
+    X(nf, result, (p = ro + rd * t, dmin(vec2(p.y,GROUND),sheep(p)).x));
     
-    // Panels
-    {
-        vec2 nf = boxIntersection(ro-panelPos-vec3(0.,5.,-5.),rd, vec3(1.5,5.,1.), m);
-        if (nf.y>0.) {
-            float t = max(nf.x,0.);
-            for(int i=0; i<128; i++) {
-                float d = panelFood(ro+rd*t).x;
-                t += d;
-                if (t > nf.y) break;
-                if (abs(d) < 0.001) break;
-            }
-            if (t < nf.y)
-                result = min(result,t); 
-        }
-    }
-    {
-        vec2 nf = boxIntersection(ro-panelWarningPos-vec3(0.,5.,-5.),rd, vec3(1.5,5.,1.), m);
-        if (nf.y>0.) {
-            float t = max(nf.x,0.);
-            for(int i=0; i<128; i++) {
-                float d = panelWarning(ro+rd*t).x;
-                t += d;
-                if (t > nf.y) break;
-                if (abs(d) < 0.001) break;
-            }
-            if (t < nf.y)
-                result = min(result,t); 
-        }
-    }
-    
-    // Flower
-    {
-        vec2 nf = boxIntersection(ro-flowerPos-vec3(0.,5.,0.),rd, vec3(2.,5.,1.), m);
-        if (nf.y>0.) {
-            float t = max(nf.x,0.);
-            for(int i=0; i<128; i++) {
-                float d = flower(ro+rd*t).x;
-                t += d;
-                if (t > nf.y) break;
-                if (abs(d) < 0.001) break;
-            }
-            if (t < nf.y)
-                result = min(result,t); 
-        }
-    }
-    
-    // Anvil
-    {
-        // TODO: the 2nd vec3 is very approximative.
-        vec2 nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(4.,4.,5.), m);
-        if (nf.y>0.) {
-            float t = max(nf.x,0.);
-            for(int i=0; i<128; i++) {
-                float d = anvil(ro+rd*t).x;
-                t += d;
-                if (t > nf.y) break;
-                if (abs(d) < 0.001) break;
-            }
-            if (t < nf.y)
-                result = min(result,t); 
-        }
-    }
+    nf = boxIntersection(ro-panelPos-vec3(0.,5.,-5.),rd, vec3(1.5,5.,1.), m);
+    X(nf, result, panelFood(ro+rd*t).x);
+
+    nf = boxIntersection(ro-panelWarningPos-vec3(0.,5.,-5.),rd, vec3(1.5,5.,1.), m);
+    X(nf, result, panelWarning(ro+rd*t).x);
+
+    nf = boxIntersection(ro-flowerPos-vec3(0.,5.,0.),rd, vec3(2.,5.,1.), m);
+    X(nf, result, flower(ro+rd*t).x);
+
+    nf = boxIntersection(ro-anvilPos-vec3(0.,3.,2.),rd, vec3(4.,4.,5.), m);
+    X(nf, result, anvil(ro+rd*t).x);
     
     // Blood
     {
