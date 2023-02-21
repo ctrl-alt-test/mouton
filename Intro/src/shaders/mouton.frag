@@ -131,7 +131,7 @@ vec2 anvil(vec3 p) {
 }
 
 vec2 flower(vec3 p) {
-
+    float iTime = int(iTime * 12) / 12.;
     p -= flowerPos;
     vec3 pr = p;
     pr.x += cos(3.1*.25+iTime)*3.1*.2;
@@ -197,6 +197,7 @@ vec2 panelWarning(vec3 p) {
 // return [distance, material]
 vec2 sheep(vec3 p) {
     p -= sheepPos;
+    float iTime = int(iTime * 12) / 12.;
     float time = mod(iTime, 1.);
     time = smoothstep(0., 1., abs(time * 2. - 1.));
 
@@ -350,6 +351,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     
     col = vec3(1.) * night * night;
     
+    float iTime = int(iTime * 12) / 12.;
     // mon
     vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
     float moon = smoothstep(0.151,0.15, length(uv-moonPos));
@@ -623,6 +625,11 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         spe = pow(spe, vec3(4.))*fre*.02;
     }
     
+    sss = vec3(0.);
+    spe = vec3(0.);
+    //emi = vec3(0.);
+    //bnc = vec3(0.);
+    // diff = mix(diff, vec3(1.), 0.2); // vec3(1.);
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
     //col = diff;//diff + bnc + amb + sss;
     //col = albedo * spe;
