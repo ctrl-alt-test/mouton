@@ -31,6 +31,7 @@ void main(void)
     gl_Position = a_position;
     
     float time = iTime;
+    time = int(time * 12) / 12.;
     
     // Default stuff
     sheepPos = vec3(0.);
@@ -48,7 +49,7 @@ void main(void)
     noseSize = 1.;
     eyesSurprise = 0.;
     
-    
+
     // Timeline
     if (time < 10.) // Head zoom
     {
