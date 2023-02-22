@@ -341,15 +341,10 @@ vec2 map(vec3 p) {
     return dmat;
 }
 
-vec3 skyColor(vec3 rd, vec2 uv, float night) {
-    vec3 col = vec3(1.);
+float skyColor(vec3 rd, vec2 uv, float night) {
+    float col = night * night;
     
     float vdots = max(dot(rd, sunDir), 0.);
-    
-    col += vec3(1.,.7,.3) * pow(vdots,1.);
-    col += vec3(1.,.5,.1) * pow(vdots,52.);
-    
-    col = vec3(1.) * night * night;
     
     float iTime = int(iTime * 12) / 12.;
     // mon
@@ -494,7 +489,7 @@ float fastTrace(vec3 ro, vec3 rd) {
 }
 
 // /!\ Not energy conservative!
-vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
+float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
     
     
@@ -506,64 +501,51 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     float shad = shadow(p, sunDir, .08, 50.);
     float fre = clamp(1.0+dot(rd,n), 0., 5.);
     
-    vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.2,1.5));
-    vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
-    vec3 sss = vec3(.5) * mix(fastAO(p, rd, .3, .75), fastAO(p, sunDir, .3, .75), 0.5);
-    vec3 spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
+    // vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.2,1.5));
+    float diff = .85 * max(dot(n,sunDir), 0.) * pow(shad, 1.2) ;
+    // vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
+    float bnc = .085 * max(dot(n,-sunDir), 0.) * ao ;
+    
+    // vec3 sss = vec3(.5) * mix(fastAO(p, rd, .3, .75), fastAO(p, sunDir, .3, .75), 0.5);
+    // float spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
     
     //sss = vec3(1.) * calcSSS(p,rd);
-    vec3 amb = vec3(.4,.45,.5)*1. * ao;
-    vec3 emi = vec3(0.);
+    float amb = .45 * ao; // vec3(.4,.45,.5)*1. * ao;
+    float emi = 0.;
     
-    vec3 albedo = vec3(0.);
+    float albedo = 0.;
     if(dmat.y == GROUND) {
-        albedo = vec3(3.);
-        sss = vec3(0.);
-        spe = vec3(0.);
+        albedo = 3.;
     } else if (dmat.y == COTON) {
-        albedo = vec3(.4);
-        sss *= vec3(1.) *(fre*.5+.5);
-        emi = vec3(.35);
-        spe = pow(spe, vec3(4.))*fre*.25;
+        albedo = .4;
+        emi = .35;
     } else if (dmat.y == CLOGS) {
-        albedo = vec3(.025);
-        sss = vec3(0.);
-        spe = pow(spe, vec3(80.))*fre*10.;
+        albedo = .025;
     } else if (dmat.y == EYE) {
-        sss *= .5;
-        albedo = vec3(1.);
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
-        albedo *= pupil;
-        spe *= pupil;
+        albedo = pupil;
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
-        spe = pow(spe, vec3(80.))*fre*3.;
     } else if(dmat.y == METAL) {
-        albedo = vec3(1.);
-        sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*2.;
+        albedo = 1.;
     } else if(dmat.y == PANEL) {
         vec3 p = p-panelWarningPos;
-        sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*10.;
         
         if (n.z > .5) {
             float tri = triangle(p-vec3(0.,7.5,-5.), vec2(1.3,.2), .01);
-            albedo = vec3(1.5,0.,0.);
+            albedo = .5;
             float symbol = smoothstep(0.13,0.1295, distance(p,vec3(0.,7.1,-4.9)));
             symbol += smoothstep(0.005,0.,UnevenCapsule2d(p.xy-vec2(0.,7.34), .06,.14,1.));
-            albedo = mix(albedo, vec3(2.), smoothstep(0.005,.0, tri));
-            albedo = mix(albedo, vec3(0.), symbol);
+            albedo = mix(albedo, 2., smoothstep(0.005,.0, tri));
+            albedo = mix(albedo, 0., symbol);
         } else {
-            albedo = vec3(1.);
+            albedo = 1.;
         }
     } else if(dmat.y == PANEL_FOOD) {
         vec3 p = p-panelPos;
-        sss = vec3(0.);
-        spe = pow(spe, vec3(8.))*fre*10.;
         if (n.z > .5) {
-            albedo = vec3(0.,0.,1.5);
+            albedo = .5;
             p.y -= 7.4;
             float squ = box(p-vec3(0.,.1,-5.), vec3(0.8,.8, 1));
             float symbol = 0.;
@@ -576,66 +558,43 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             p.xy = rot(-1.6) * p.xy;
             symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(x,-.6), .1,.05,1.));
             symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(x,.5), .16,.1,0.15));
-            albedo = mix(albedo, vec3(2.), smoothstep(0.01,.0, squ));
-            albedo = mix(albedo, vec3(0.), symbol);
+            albedo = mix(albedo, 2., smoothstep(0.01,.0, squ));
+            albedo = mix(albedo, 0., symbol);
         } else {
-            albedo = vec3(1.);
+            albedo = 1.;
         }
     } else if (dmat.y == PISTIL) {
         vec3 pr = p - flowerPos;
         pr.x += cos(3.1*.25+iTime)*3.1*.2;
         pr.y -= 2.8;
         pr.zy = rot(.75) * pr.zy;
-        albedo = mix(vec3(2.,.75,.0), vec3(2.,2.,.0), smoothstep(0.,.45, length(pr-vec3(0.,.3,0.))))*1.8;
-        sss = vec3(0.01);
-        spe = vec3(0.);
+        albedo = mix(.9 /*vec3(2.,.75,.0)*/, 1.3 /*vec3(2.,2.,.0)*/, smoothstep(0.,.45, length(pr-vec3(0.,.3,0.))))*1.8;
     } else if (dmat.y == TIGE) {
-        albedo = vec3(0.,.05,.0);
-        sss *= vec3(1.);
-        spe *= vec3(1.)*fre;
+        albedo = .02;
     } else if (dmat.y == PETAL) {
         vec3 pr = p - flowerPos;
         pr.x += cos(3.1*.25+iTime)*3.1*.2;
         pr.y -= 2.8;
         pr.zy = rot(.75) * pr.zy;
-        albedo = mix(vec3(1.,1.,1.)+.5, vec3(.75,0.5,1.), smoothstep(0.5,1.1, length(pr-vec3(0.,.3,0.))))*2.;
-       // albedo = vec3(1.,1.,1.)*3.;
-        sss *=0.0;
-        spe = pow(spe, vec3(4.))*fre*1.0;
+        albedo = mix( 1.5, .7 /*vec3(.75,0.5,1.)*/, smoothstep(0.5,1.1, length(pr-vec3(0.,.3,0.))))*2.;
     } else if(dmat.y == BLACK_METAL) {
-        albedo = vec3(1.);
-        diff *= vec3(.1)*fre;
-        amb *= vec3(.1)*fre;
-        bnc *= vec3(0.0)*fre;
-        sss = vec3(0.);
-        spe = pow(spe, vec3(100.))*fre*2.;
+        albedo = 1.;
+        diff *= .1*fre;
+        amb *= .1*fre;
+        bnc = 0.;
     }  else if(dmat.y == BLOOD) {
-        albedo = vec3(1.,.01,.01)*.3;
+        albedo = .7;
         float fre2 = fre*fre;
-        diff *= vec3(3.);
-        amb *= vec3(2.)*fre2;
-        bnc *= vec3(1.);
-        sss *= vec3(.0);
-        spe = vec3(1.,.3,.3) * pow(spe, vec3(500.))*5.;
+        diff *= 3.;
+        amb *= 2.*fre2;
     } 
     if (dmat.y == SKIN) {
-        albedo = vec3(1.,.7,.5)*1.;
-        amb *= vec3(1.,.75,.75);
-        sss = pow(sss, vec3(.5,2.5,5.0)+2.)*2.;// * fre;// * pow(fre, 1.);
-        spe = pow(spe, vec3(4.))*fre*.02;
+        albedo = .8;
+        amb *= .8;
     }
     
-    sss = vec3(0.);
-    spe = vec3(0.);
-    //emi = vec3(0.);
-    //bnc = vec3(0.);
-    // diff = mix(diff, vec3(1.), 0.2); // vec3(1.);
-    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
-    //col = diff;//diff + bnc + amb + sss;
-    //col = albedo * spe;
-   //col = diff;
-    //col = amb;
-   // col = sss;
+    float col = (albedo * (amb*1. + diff*.5 + bnc*2. ) + emi) *  night;
+
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
@@ -644,7 +603,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     if(dmat.y == GROUND) {
         float theta = cos(atan(uv.x, uv.y)*15.+iTime*3.);
         float r = length(uv)*.5;
-        col = mix(col,  mix(vec3(1.,0.5,00), vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited);
+        col = mix(col,  mix(.5, 1., smoothstep(-r, r, theta)) , excited);
     }
 
     return clamp(col,0.,1.);
@@ -666,7 +625,7 @@ void main()
     float t = fastTrace(ro,rd);
     vec3 p = ro + rd * t;
     vec3 n = normal(p);
-    vec3 col = shade(ro, rd, p, n, v);
+    float col = shade(ro, rd, p, n, v);
         
     // Excited stars
     {
@@ -677,16 +636,16 @@ void main()
         float size = 1.4+0.2*sin(iTime*20.);
         size *= smoothstep(0.5,1.,excited);
         float star = star2d(p, size, .5);
-        vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
+        float starColor = mix(.55, .4, smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
         col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);
     }
     
 
     // vignetting
-    col /= (1.+pow(length(uv*2.-1.),4.)*.04);
+    col /= 1.+pow(length(uv*2.-1.),4.)*.04;
     
     // gamma correction
-    fragColor = vec4( pow(col, vec3(1./2.2)), 1.);
+    fragColor = vec4( pow(col, 1./2.2) );
     
 }
 
