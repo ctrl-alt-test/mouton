@@ -99,6 +99,7 @@ vec2 moda (vec2 p, float per)
 }
 
 vec2 blood(vec3 p) {
+    float iTime = int(iTime * 12) / 12.;
     p.xz -= anvilPos.xz;
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
@@ -106,7 +107,7 @@ vec2 blood(vec3 p) {
         d -= pow((noise(p*.7+1.)*.5+noise(p*1.7+100.)*.3+noise(p*2.7+100.)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-150.)*4.))+.03;
         return vec2(d, BLOOD);
     }
-    else return vec2(INFINITE, GROUND);
+    return vec2(INFINITE, GROUND);
 }
 
 
@@ -125,9 +126,8 @@ vec2 anvil(vec3 p) {
         vec2 dmat = vec2(d-.1, BLACK_METAL);
         
         return dmat;
-    } else {
-        return vec2(INFINITE,GROUND);
     }
+    return vec2(INFINITE,GROUND);
 }
 
 vec2 flower(vec3 p) {
@@ -470,7 +470,7 @@ float fastTrace(vec3 ro, vec3 rd) {
     // Blood
     t = -(ro.y+.4) * m.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
     if (t > 0. && length((ro+rd*t).xz-anvilPos.xz)<10.) {
-        t = -t; // ???? WTF ????
+        // t = -t; // ???? WTF ????
         for(int i=0; i<128; i++) {
             vec3 p = ro+rd*t;
             float d = min(p.y,blood(p).x);
@@ -491,7 +491,7 @@ float fastTrace(vec3 ro, vec3 rd) {
 // /!\ Not energy conservative!
 float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
-    
+    float iTime = int(iTime * 12) / 12.;
     
     float night = smoothstep(0.,.3, sunDir.y)+.1;
     
@@ -501,16 +501,10 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     float shad = shadow(p, sunDir, .08, 50.);
     float fre = clamp(1.0+dot(rd,n), 0., 5.);
     
-    // vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.2,1.5));
     float diff = .85 * max(dot(n,sunDir), 0.) * pow(shad, 1.2) ;
-    // vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
     float bnc = .085 * max(dot(n,-sunDir), 0.) * ao ;
     
-    // vec3 sss = vec3(.5) * mix(fastAO(p, rd, .3, .75), fastAO(p, sunDir, .3, .75), 0.5);
-    // float spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
-    
-    //sss = vec3(1.) * calcSSS(p,rd);
-    float amb = .45 * ao; // vec3(.4,.45,.5)*1. * ao;
+    float amb = .45 * ao;
     float emi = 0.;
     
     float albedo = 0.;
@@ -525,7 +519,7 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
-        albedo = pupil;
+        albedo = mix(0.1, 1.5, pupil);
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
     } else if(dmat.y == METAL) {
         albedo = 1.;
@@ -534,11 +528,10 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         
         if (n.z > .5) {
             float tri = triangle(p-vec3(0.,7.5,-5.), vec2(1.3,.2), .01);
-            albedo = .5;
-            float symbol = smoothstep(0.13,0.1295, distance(p,vec3(0.,7.1,-4.9)));
-            symbol += smoothstep(0.005,0.,UnevenCapsule2d(p.xy-vec2(0.,7.34), .06,.14,1.));
-            albedo = mix(albedo, 2., smoothstep(0.005,.0, tri));
-            albedo = mix(albedo, 0., symbol);
+            float symbol = smoothstep(0.13,0.1295, distance(p,vec3(0.,7.06,-4.9)));
+            symbol += smoothstep(0.005,0.,UnevenCapsule2d(p.xy-vec2(0.,7.3), .06,.14,1.));
+            albedo = mix(.5, 2., smoothstep(0.005,.0, tri));
+            albedo = mix(albedo, 0.1, symbol);
         } else {
             albedo = 1.;
         }
@@ -583,7 +576,7 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         amb *= .1*fre;
         bnc = 0.;
     }  else if(dmat.y == BLOOD) {
-        albedo = .7;
+        albedo = .4;
         float fre2 = fre*fre;
         diff *= 3.;
         amb *= 2.*fre2;
@@ -615,7 +608,8 @@ void main()
     vec2 uv = (gl_FragCoord.xy) * invRes;
     vec2 v = uv*2.-1.;
     v.x *= iResolution.x * invRes.y;
-        
+    float iTime = int(iTime * 12) / 12.;
+    
     // Setup ray
     vec3 ro = camPos;
     vec3 ta = camTa;
@@ -638,15 +632,12 @@ void main()
         float star = star2d(p, size, .5);
         float starColor = mix(.55, .4, smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
         col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);
+        t = mix(100., t, smoothstep(0.,0.01, star));
     }
     
-
-    // vignetting
-    col /= 1.+pow(length(uv*2.-1.),4.)*.04;
-    
+    vec2 norm = n.xz; // fixme
     // gamma correction
-    fragColor = vec4( pow(col, 1./2.2) );
-    
+    fragColor = vec4( norm, t, pow(col, 1./2.2) );
 }
 
 

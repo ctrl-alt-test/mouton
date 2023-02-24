@@ -25,10 +25,6 @@ float randomLine(float seed)
     float l = 1.0;
     
     l = pow(  abs(a * uv.x + b * uv.y + c ), 1.0/16.0 );
-    //if ( mu > 0.2)
-        
-    // else
-//         l = 2.0 - pow( abs(a * uv.x + b * uv.y + c), 1.0/16.0 );             
     
     return mix(0.5, 1.0, mu > 0.2 ? l : 2. - l);
 }
@@ -53,11 +49,13 @@ float randomBlotch(float seed)
     return mix(0.3 + 0.2 * (1.0 - (s / 0.02)), 1.0, v);
 }
 
+#define ErrorPeriod 30.0
+#define ErrorRange 0.003
 
 void main(void)
 {
     // Set frequency of global effect (12 / second).
-    float t = float(int(iTime * 12));
+    float t = int(iTime * 12) / 12.;
 
     vec2 invRes = 1./iResolution;
     uv = gl_FragCoord.xy * invRes;
@@ -65,54 +63,55 @@ void main(void)
     if (rand(t) < .01) uv += vec2(0.1);
     // Get some image movement
     vec2 suv = uv + 0.004 * vec2( rand(t), rand(t + 23.0));
-    vec2 offset = (suv*2.-1.)*invRes.x*.5;
+    suv += (suv*2.-1.)*invRes.x*.5;
 
-    float col = texture(prevPass,suv+offset).r;
+    float sens = mix(1.2, 0.3, smoothstep(1., 10., texture(prevPass,suv).z));
+    float noise = rand(t+9.)*.005*sens; // (texture(prevPass, suv * 0.5).r - 0.5) * NoiseAmount;
+    vec2 uvs[3];
+    uvs[0] = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 0.0) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 0.0) + noise);
+    uvs[1] = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 1.047) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 3.142) + noise);
+    uvs[2] = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 2.094) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 1.571) + noise);
+    
+    float edge = texture(prevPass, uvs[0]).r * texture(prevPass, uvs[1]).r * texture(prevPass, uvs[2]).r;
 
+
+    float col = texture(prevPass,suv).g;
+    col *= mix(.2, 1., edge);
+    
     // fade in
-    col *= smoothstep(0.,10., iTime);
+    col *= smoothstep(0.,10., t);
     
     const float endTime = 160.;
 
+
     // Circle to black
     float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
-    float t2 = max(.137, smoothstep(endTime+1., endTime, iTime));
+    float t2 = max(.137, smoothstep(endTime+1., endTime, t));
     col *= smoothstep(t2, t2-.005, circle);
 
     // Looney tunes
     float f = circle;
-    float alpha = smoothstep(0.135, .136, f) * smoothstep(endTime+1., endTime+2., iTime);
+    float alpha = smoothstep(0.135, .136, f) * smoothstep(endTime+1., endTime+2., t);
     f = fract(23. * pow(f, .25));
     f -= smoothstep(0.95, 0.99, f);
     float col2 = mix(.55, .35, pow(f,1.));
     col = mix(col, col2, alpha);
     
-    // Create a time-varying vignetting effect
-    float vI = 16.0 * (uv.x * (1.0-uv.x) * uv.y * (1.0-uv.y));
-    vI *= mix( 0.7, 1.0, rand(t + 0.5));
-    
-    // Add additive flicker
-    //vI += 0. + 0.2 * rand(t+8.);
-        
-    // Add a fixed vignetting (independent of the flicker)
-    vI *= pow(16.0 * uv.x * (1.0-uv.x) * uv.y * (1.0-uv.y), 0.14);
+    // vignetting
+    float vI = 12.0 * (uv.x * (1.0-uv.x) * uv.y * (1.0-uv.y));
 
-    int l = int(8.0 * rand(t+7.0));
-    int s = int( max(8.0 * rand(t+18.0) -2.0, 0.0 ));
-    for (int i = 1; i < 8; i++) {
-        if ( i < l ) vI *= randomLine( t+6.0+17.* i);
-        if ( i < s ) vI *= randomBlotch( t+6.0+19.* i);
+    int l = int(8. * rand(t+7.) - 1.);
+    int s = int(8. * rand(t+18.) - 2.);
+    for (int i = 0; i < 8; i++) {
+        if (i < l) vI *= randomLine(t + i);
+        if (i < s) vI *= randomBlotch(t - i);
     }
-
-    // Show the image modulated by the defects
     col *= vI;
-    // Add some grain
-    col *= 1.0+(rand(uv+t*.01)-.2)*.15;
-
-    col *= .7;
+    col -= rand(uv+t)*.05; // grain
 
     // Fade out
-    col *= smoothstep(endTime+5., endTime+4., iTime);
+    col *= smoothstep(endTime+5., endTime+4., t);
 
     fragColor = vec4(col, col, col, 1.);
 }
+

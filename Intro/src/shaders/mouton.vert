@@ -330,7 +330,7 @@ void main(void)
         float time = time-150.;
         
         eyeDir = normalize(vec3(0.,0.,1.));
-        sheepPos = vec3(0.,-smoothstep(0.05,0.1,time)*4.5,-22.);
+        sheepPos = vec3(0.,-smoothstep(0.25,0.4,time)*4.5,-22.);
         flowerPos = vec3(2.,0.,-30.);
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
@@ -339,7 +339,7 @@ void main(void)
         camTa = vec3(3., 2., -23.);
         camFocal = mix(4.,4.2, smoothstep(0.,5.,time));
         
-        float fall = smoothstep(.1,0.,time)*13.;
+        float fall = smoothstep(.4,.1,time)*13.;
         anvilPos = vec3(0.,fall+0.,-22.);
 
     } else { // ending screen
