@@ -10,27 +10,28 @@ float checkSame(vec4 center, vec4 samplef)
     float centerDepth = center.z;
     vec2 sampleNormal = samplef.xy;
     float sampleDepth = samplef.z;
-    
-    // Less sensitive when it's far away; more edge details when it's closer.
-    float sensitivity = mix(1.2, 0.3, smoothstep(1., 25., centerDepth));
-    
-    vec2 diffNormal = abs(centerNormal - sampleNormal) * sensitivity;
-    bool isSameNormal = (diffNormal.x + diffNormal.y) < 0.2;
-    float diffDepth = abs(centerDepth - sampleDepth) * sensitivity;
-    bool isSameDepth = diffDepth < 1.9;
 
     if (centerDepth > 35. && sampleDepth > 35.) return 1.;
+    
+    // Less sensitive when it's far away; more edge details when it's closer.
+    float sensitivity = mix(1.2, .3, centerDepth);
+    
+    vec2 diffNormal = abs(centerNormal - sampleNormal) * sensitivity;
+    bool isSameNormal = diffNormal.x + diffNormal.y < 0.2;
+    float diffDepth = abs(centerDepth - sampleDepth) * sensitivity;
+    bool isSameDepth = diffDepth < 0.03;
 
     return (isSameNormal && isSameDepth) ? 1.0 : 0.7;
 }
 
 void main(void) 
 {
+    float width = .0015;
     vec4 sample0 = texture(prevPass, gl_FragCoord.xy / iResolution.xy);
-    vec4 sample1 = texture(prevPass, (gl_FragCoord.xy + vec2(1., 1.)) / iResolution.xy);
-    vec4 sample2 = texture(prevPass, (gl_FragCoord.xy + vec2(-1., -1.)) / iResolution.xy);
-    vec4 sample3 = texture(prevPass, (gl_FragCoord.xy + vec2(-1., 1.)) / iResolution.xy);
-    vec4 sample4 = texture(prevPass, (gl_FragCoord.xy + vec2(1., -1.)) / iResolution.xy);
+    vec4 sample1 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(1., 1.));
+    vec4 sample2 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(-1., -1.));
+    vec4 sample3 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(-1., 1.));
+    vec4 sample4 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(1., -1.));
     
     float edge = checkSame(sample1, sample2) * checkSame(sample3, sample4);
     

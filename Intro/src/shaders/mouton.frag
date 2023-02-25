@@ -514,7 +514,7 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = .4;
         emi = .35;
     } else if (dmat.y == CLOGS) {
-        albedo = .025;
+        albedo = .15;
     } else if (dmat.y == EYE) {
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
@@ -635,10 +635,17 @@ void main()
         t = mix(100., t, smoothstep(0.,0.01, star));
         n = mix(vec3(1.), n, smoothstep(0.,0.01, star));
     }
+
+    // We return parts of the normal + depth information (used for edge detection),
+    // as well as the color (channel w).We make sure all components are restricted
+    // between 0 and 1.
+
+    float nx = clamp(n.x, 0., 1.);
+    float ny = clamp(n.y, 0., 1.);
+    t = smoothstep(1., 30., t);
     
-    vec2 norm = n.xz; // fixme
     // gamma correction
-    fragColor = vec4( norm, t, pow(col, 1./2.2) );
+    fragColor = vec4(nx, ny, t, pow(col, 1./2.2));
 }
 
 

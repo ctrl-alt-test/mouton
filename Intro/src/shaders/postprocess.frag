@@ -24,7 +24,7 @@ float randomLine(float seed)
     
     float l = 1.0;
     
-    l = pow(  abs(a * uv.x + b * uv.y + c ), 1.0/16.0 );
+    l = pow(abs(a * uv.x + b * uv.y + c ), 1.0/16.0 );
     
     return mix(0.5, 1.0, mu > 0.2 ? l : 2. - l);
 }
@@ -49,9 +49,6 @@ float randomBlotch(float seed)
     return mix(0.3 + 0.2 * (1.0 - (s / 0.02)), 1.0, v);
 }
 
-#define ErrorPeriod 30.0
-#define ErrorRange 0.003
-
 void main(void)
 {
     // Set frequency of global effect (12 / second).
@@ -65,14 +62,13 @@ void main(void)
     vec2 suv = uv + 0.004 * vec2( rand(t), rand(t + 23.0));
     suv += (suv*2.-1.)*invRes.x*.5;
 
-    float sens = mix(1.2, 0.3, smoothstep(1., 10., texture(prevPass,suv).z));
-    float noise = rand(t+9.)*.005*sens;
-    vec2 uvs1 = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 0.0) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 0.0) + noise);
-    vec2 uvs2 = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 1.047) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 3.142) + noise);
-    vec2 uvs3 = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 2.094) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 1.571) + noise);
+    const float errorFreq = 20.;
+    const float errorRange = 0.003; 
+    vec2 uvs1 = suv + vec2(errorRange * sin(errorFreq * suv.y), errorRange * sin(errorFreq * suv.x));
+    vec2 uvs2 = suv + vec2(errorRange * sin(errorFreq * suv.y + 1.), errorRange * sin(errorFreq * suv.x + 3.));
+    vec2 uvs3 = suv + vec2(errorRange * sin(errorFreq * suv.y + 2.), errorRange * sin(errorFreq * suv.x + 1.));
     
-    float edge = texture(prevPass, uvs1).r * texture(prevPass, uvs2).r * texture(prevPass, uvs3).r;
-
+    float edge = texture(prevPass, uvs1).r * pow(texture(prevPass, uvs2).r,0.5) * pow(texture(prevPass, uvs3).r,0.25);
 
     float col = texture(prevPass,suv).g;
     col *= mix(.2, 1., edge);
