@@ -493,7 +493,7 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
     float iTime = int(iTime * 12) / 12.;
     
-    float night = smoothstep(0.,.3, sunDir.y)+.1;
+    float night = mix(0.3, 1., smoothstep(0.,.3, sunDir.y));
     
     float ao = fastAO(p, n, .15, 1.);
     ao *= fastAO(p, n, 1., .1)*.5;
@@ -571,22 +571,22 @@ float shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         pr.zy = rot(.75) * pr.zy;
         albedo = mix( 1.5, .7 /*vec3(.75,0.5,1.)*/, smoothstep(0.5,1.1, length(pr-vec3(0.,.3,0.))))*2.;
     } else if(dmat.y == BLACK_METAL) {
-        albedo = 1.;
+        albedo = 2.;
         diff *= .1*fre;
         amb *= .1*fre;
         bnc = 0.;
     }  else if(dmat.y == BLOOD) {
-        albedo = .4;
+        albedo = .8;
         float fre2 = fre*fre;
         diff *= 3.;
-        amb *= 2.*fre2;
+        amb *= 1.*fre2;
     } 
     if (dmat.y == SKIN) {
         albedo = .8;
         amb *= .8;
     }
     
-    float col = (albedo * (amb*1. + diff*.5 + bnc*2. ) + emi) *  night;
+    float col = (albedo * (amb*1. + diff*.5 + bnc*2. ) + emi) * night;
 
     // fog
     float t = length(p-ro);
@@ -642,7 +642,7 @@ void main()
 
     float nx = clamp(n.x, 0., 1.);
     float ny = clamp(n.y, 0., 1.);
-    t = smoothstep(1., 30., t);
+    t = smoothstep(1., 40., t);
     
     // gamma correction
     fragColor = vec4(nx, ny, t, pow(col, 1./2.2));

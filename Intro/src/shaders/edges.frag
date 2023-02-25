@@ -11,10 +11,10 @@ float checkSame(vec4 center, vec4 samplef)
     vec2 sampleNormal = samplef.xy;
     float sampleDepth = samplef.z;
 
-    if (centerDepth > 35. && sampleDepth > 35.) return 1.;
+    if (centerDepth > .999 && sampleDepth > .999) return 1.;
     
     // Less sensitive when it's far away; more edge details when it's closer.
-    float sensitivity = mix(1.2, .3, centerDepth);
+    float sensitivity = mix(1.3, .4, centerDepth);
     
     vec2 diffNormal = abs(centerNormal - sampleNormal) * sensitivity;
     bool isSameNormal = diffNormal.x + diffNormal.y < 0.2;
@@ -26,7 +26,7 @@ float checkSame(vec4 center, vec4 samplef)
 
 void main(void) 
 {
-    float width = .0015;
+    float width = 0.001;
     vec4 sample0 = texture(prevPass, gl_FragCoord.xy / iResolution.xy);
     vec4 sample1 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(1., 1.));
     vec4 sample2 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(-1., -1.));
