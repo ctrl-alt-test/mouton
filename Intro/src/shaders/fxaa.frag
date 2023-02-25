@@ -1,6 +1,6 @@
 #version 150
 out vec4 fragColor;
-const vec2 iResolution = vec2(1280.,720.);
+#define iResolution vec2(1280.,720.)
 
 
 uniform sampler2D prevPass;
@@ -10,10 +10,10 @@ uniform sampler2D prevPass;
 
 vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
     
-    vec3 rgbNW = textureLod(tex, uv.zw, 0.0).xyz;
-    vec3 rgbNE = textureLod(tex, uv.zw + vec2(1,0)*rcpFrame.xy, 0.0).xyz;
-    vec3 rgbSW = textureLod(tex, uv.zw + vec2(0,1)*rcpFrame.xy, 0.0).xyz;
-    vec3 rgbSE = textureLod(tex, uv.zw + vec2(1,1)*rcpFrame.xy, 0.0).xyz;
+    vec3 rgbNW = textureLod(tex, uv.zw, 0.0).www;
+    vec3 rgbNE = textureLod(tex, uv.zw + vec2(1,0)*rcpFrame.xy, 0.0).www;
+    vec3 rgbSW = textureLod(tex, uv.zw + vec2(0,1)*rcpFrame.xy, 0.0).www;
+    vec3 rgbSE = textureLod(tex, uv.zw + vec2(1,1)*rcpFrame.xy, 0.0).www;
     vec3 rgbM  = textureLod(tex, uv.xy, 0.0).xyz;
 
     vec3 luma = vec3(0.299, 0.587, 0.114);
@@ -37,11 +37,11 @@ vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
           dir * rcpDirMin)) * rcpFrame.xy;
 
     vec3 rgbA = (1.0/2.0) * (
-        textureLod(tex, uv.xy + dir * (1.0/3.0 - 0.5), 0.0).xyz +
-        textureLod(tex, uv.xy + dir * (2.0/3.0 - 0.5), 0.0).xyz);
+        textureLod(tex, uv.xy + dir * (1.0/3.0 - 0.5), 0.0).www +
+        textureLod(tex, uv.xy + dir * (2.0/3.0 - 0.5), 0.0).www);
     vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-        textureLod(tex, uv.xy + dir * (0.0/3.0 - 0.5), 0.0).xyz +
-        textureLod(tex, uv.xy + dir * (3.0/3.0 - 0.5), 0.0).xyz);
+        textureLod(tex, uv.xy + dir * (0.0/3.0 - 0.5), 0.0).www +
+        textureLod(tex, uv.xy + dir * (3.0/3.0 - 0.5), 0.0).www);
     
     float lumaB = dot(rgbB, luma);
 
@@ -57,5 +57,6 @@ void main(void)
     vec4 uv = vec4( texcoord, texcoord - (invRes * 0.5));
     
     vec3 col = FxaaPixelShader(uv, prevPass, invRes);
-    fragColor = vec4(col,1.);
+    vec4 orig = textureLod(prevPass, uv.xy, 0.0);
+    fragColor = vec4(orig.xyz, col.r);
 }

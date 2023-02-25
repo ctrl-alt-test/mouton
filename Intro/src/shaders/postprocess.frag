@@ -66,13 +66,12 @@ void main(void)
     suv += (suv*2.-1.)*invRes.x*.5;
 
     float sens = mix(1.2, 0.3, smoothstep(1., 10., texture(prevPass,suv).z));
-    float noise = rand(t+9.)*.005*sens; // (texture(prevPass, suv * 0.5).r - 0.5) * NoiseAmount;
-    vec2 uvs[3];
-    uvs[0] = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 0.0) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 0.0) + noise);
-    uvs[1] = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 1.047) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 3.142) + noise);
-    uvs[2] = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 2.094) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 1.571) + noise);
+    float noise = rand(t+9.)*.005*sens;
+    vec2 uvs1 = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 0.0) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 0.0) + noise);
+    vec2 uvs2 = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 1.047) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 3.142) + noise);
+    vec2 uvs3 = suv + vec2(ErrorRange * sin(ErrorPeriod * suv.y + 2.094) + noise, ErrorRange * sin(ErrorPeriod * suv.x + 1.571) + noise);
     
-    float edge = texture(prevPass, uvs[0]).r * texture(prevPass, uvs[1]).r * texture(prevPass, uvs[2]).r;
+    float edge = texture(prevPass, uvs1).r * texture(prevPass, uvs2).r * texture(prevPass, uvs3).r;
 
 
     float col = texture(prevPass,suv).g;

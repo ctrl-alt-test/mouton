@@ -565,6 +565,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\shaders\edges.frag" />
     <None Include="src\shaders\fxaa.frag" />
     <None Include="src\shaders\mouton.frag" />
     <None Include="src\shaders\mouton.vert" />

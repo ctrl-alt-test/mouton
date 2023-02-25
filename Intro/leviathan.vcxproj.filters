@@ -26,6 +26,9 @@
     <None Include="src\shaders\shaders.inl">
       <Filter>shaders</Filter>
     </None>
+    <None Include="src\shaders\edges.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ext">

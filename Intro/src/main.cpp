@@ -24,8 +24,10 @@
 // static allocation saves a few bytes
 static int shaderMain;
 static int shaderFXAA;
+static int shaderEdges;
 static int shaderPostProcess;
 // static HDC hDC;
+
 
 #pragma code_seg(".main")
 void entrypoint(void)
@@ -66,6 +68,14 @@ void entrypoint(void)
 	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderFXAA, f);
 	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderFXAA);
 
+	// Edges
+	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
+	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &edges_frag, 0);
+	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
+
+	shaderEdges = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
+	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderEdges, f);
+	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderEdges);
 
 	// Post process
 	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
@@ -93,6 +103,7 @@ void entrypoint(void)
 			PeekMessage(0, 0, 0, 0, PM_REMOVE);
 		#endif
 
+
 		// main renderer
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderMain);
 		((PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f"))(0, time);
@@ -112,6 +123,16 @@ void entrypoint(void)
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
 		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderFXAA);
+		glRects(-1, -1, 1, 1);
+
+		// edges
+
+		glBindTexture(GL_TEXTURE_2D, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
+		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
+		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderEdges);
+		((PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i"))(0, 0);
 		glRects(-1, -1, 1, 1);
 
 		// Post processing

@@ -633,6 +633,7 @@ void main()
         float starColor = mix(.55, .4, smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
         col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);
         t = mix(100., t, smoothstep(0.,0.01, star));
+        n = mix(vec3(1.), n, smoothstep(0.,0.01, star));
     }
     
     vec2 norm = n.xz; // fixme
