@@ -63,15 +63,15 @@ void main(void)
     suv += (suv*2.-1.)*invRes.x*.5;
 
     const float errorFreq = 20.;
-    const float errorRange = 0.003; 
+    const float errorRange = 0.002;
     vec2 uvs1 = suv + vec2(errorRange * sin(errorFreq * suv.y), errorRange * sin(errorFreq * suv.x));
-    vec2 uvs2 = suv + vec2(errorRange * sin(errorFreq * suv.y + 1.), errorRange * sin(errorFreq * suv.x + 3.));
-    vec2 uvs3 = suv + vec2(errorRange * sin(errorFreq * suv.y + 2.), errorRange * sin(errorFreq * suv.x + 1.));
+    vec2 uvs2 = suv + vec2(errorRange * sin(errorFreq * suv.y + 1.), 2.*errorRange * sin(errorFreq * suv.x + 3.));
+    vec2 uvs3 = suv + vec2(errorRange * sin(errorFreq * suv.y + 2.), 2.*errorRange * sin(errorFreq * suv.x + 1.));
     
-    float edge = texture(prevPass, uvs1).r * pow(texture(prevPass, uvs2).r,0.5) * pow(texture(prevPass, uvs3).r,0.25);
+    float edge = texture(prevPass, uvs1).r * pow(texture(prevPass, uvs2).r,0.5); // * pow(texture(prevPass, uvs3).r,0.3);
 
     float col = texture(prevPass,suv).g;
-    col *= mix(.2, 1., edge);
+    col *= edge;
     
     // fade in
     col *= smoothstep(0.,10., t);
@@ -94,6 +94,7 @@ void main(void)
     
     // vignetting
     float vI = 12.0 * (uv.x * (1.0-uv.x) * uv.y * (1.0-uv.y));
+    vI = smoothstep(0., .5, vI);
 
     int l = int(8. * rand(t+7.) - 1.);
     int s = int(8. * rand(t+18.) - 2.);

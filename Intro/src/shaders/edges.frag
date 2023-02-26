@@ -16,26 +16,30 @@ float checkSame(vec4 center, vec4 samplef)
     // Less sensitive when it's far away; more edge details when it's closer.
     float sensitivity = mix(1.3, .4, centerDepth);
     
-    vec2 diffNormal = abs(centerNormal - sampleNormal) * sensitivity;
-    bool isSameNormal = diffNormal.x + diffNormal.y < 0.2;
-    float diffDepth = abs(centerDepth - sampleDepth) * sensitivity;
-    bool isSameDepth = diffDepth < 0.03;
+    float distNormal = distance(centerNormal, sampleNormal) * sensitivity;
+    if (distNormal > 0.15) return mix(0.6, 1., smoothstep(0.15, 1., distNormal));
 
-    return (isSameNormal && isSameDepth) ? 1.0 : 0.7;
+    float diffDepth = abs(centerDepth - sampleDepth) * sensitivity;
+    bool isSameDepth = min(centerDepth,sampleDepth) / max(centerDepth,sampleDepth) > 0.85;
+    //isSameDepth = true;
+
+    return isSameDepth ? 1.0 : 0.6;
+//    return 1.;
 }
 
 void main(void) 
 {
-    float width = 0.001;
+    float width = 0.0009;
     vec4 sample0 = texture(prevPass, gl_FragCoord.xy / iResolution.xy);
-    vec4 sample1 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(1., 1.));
-    vec4 sample2 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(-1., -1.));
-    vec4 sample3 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(-1., 1.));
-    vec4 sample4 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + width*vec2(1., -1.));
+    vec4 sample1 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + vec2(width, width));
+    vec4 sample2 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + vec2(-width, -width));
+    vec4 sample3 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + vec2(-width, width));
+    vec4 sample4 = texture(prevPass, gl_FragCoord.xy / iResolution.xy + vec2(width, -width));
     
     float edge = checkSame(sample1, sample2) * checkSame(sample3, sample4);
     
     // edge, base color, depth
     fragColor = vec4(edge, sample0.w, sample0.z, 1.);
+    //fragColor = vec4(edge, sample0.w, sample0.z, 1.);
 }
 

@@ -640,8 +640,9 @@ void main()
     // as well as the color (channel w).We make sure all components are restricted
     // between 0 and 1.
 
-    float nx = clamp(n.x, 0., 1.);
-    float ny = clamp(n.y, 0., 1.);
+    n = normalize(n);
+    float nx = clamp(0.5*n.x+.5, 0., 1.);
+    float ny = clamp(0.5*n.y+.5, 0., 1.);
     t = smoothstep(1., 40., t);
     
     // gamma correction
