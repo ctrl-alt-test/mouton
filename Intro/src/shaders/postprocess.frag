@@ -29,26 +29,6 @@ float randomLine(float seed)
     return mix(0.5, 1.0, mu > 0.2 ? l : 2. - l);
 }
 
-// Generate some blotches.
-float randomBlotch(float seed)
-{
-    float x = rand(seed);
-    float y = rand(seed+1.0);
-    float s = 0.01 * rand(seed+2.0);
-    
-    vec2 p = vec2(x,y) - uv;
-    p.x *= iResolution.x / iResolution.y;
-    float a = atan(p.y,p.x);
-    float v = 1.0;
-    float ss = s*s * (sin(6.2831*a*x)*0.1 + 1.0);
-    
-    if ( dot(p,p) < ss ) v = 0.2;
-    else
-        v = pow(dot(p,p) - ss, 1.0/16.0);
-    
-    return mix(0.3 + 0.2 * (1.0 - (s / 0.02)), 1.0, v);
-}
-
 void main(void)
 {
     // Set frequency of global effect (12 / second).
@@ -63,12 +43,15 @@ void main(void)
     suv += (suv*2.-1.)*invRes.x*.5;
 
     const float errorFreq = 20.;
-    const float errorRange = 0.002;
-    vec2 uvs1 = suv + vec2(errorRange * sin(errorFreq * suv.y), errorRange * sin(errorFreq * suv.x));
-    vec2 uvs2 = suv + vec2(errorRange * sin(errorFreq * suv.y + 1.), 2.*errorRange * sin(errorFreq * suv.x + 3.));
-    vec2 uvs3 = suv + vec2(errorRange * sin(errorFreq * suv.y + 2.), 2.*errorRange * sin(errorFreq * suv.x + 1.));
-    
-    float edge = texture(prevPass, uvs1).r * pow(texture(prevPass, uvs2).r,0.5); // * pow(texture(prevPass, uvs3).r,0.3);
+    float errorRange = .004;
+    vec2 uvs1 = suv; // + vec2(0. * errorRange * sin(errorFreq * suv.y), .0 * errorRange * sin(errorFreq * suv.x));
+    float edge = pow(texture(prevPass, uvs1).r,1.);
+
+    vec2 err = errorRange * vec2(sin(errorFreq * suv.y + 1.), sin(errorFreq * suv.x + 3.));
+    edge *= mix(  pow(texture(prevPass, suv + err).r,0.7), 1., smoothstep(0.0, 0.006, length(err)));
+
+    err = errorRange * vec2(sin(errorFreq * suv.y + 2.), sin(errorFreq * suv.x + 1.));
+    edge *= mix(  pow(texture(prevPass, suv + err).r,0.7), 1., smoothstep(0.0, 0.005, length(err)));
 
     float col = texture(prevPass,suv).g;
     col *= edge;
@@ -77,7 +60,6 @@ void main(void)
     col *= smoothstep(0.,10., t);
     
     const float endTime = 160.;
-
 
     // Circle to black
     float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
@@ -100,7 +82,6 @@ void main(void)
     int s = int(8. * rand(t+18.) - 2.);
     for (int i = 0; i < 8; i++) {
         if (i < l) vI *= randomLine(t + i);
-        if (i < s) vI *= randomBlotch(t - i);
     }
     col *= vI;
     col -= rand(uv+t)*.05; // grain
