@@ -91,6 +91,9 @@ void main(void)
     vec3 col2 = mix(vec3(1.,.6,.0), vec3(1.,.0,0.), pow(f,1.));
     col = mix(col, col2, alpha);
     
+    // vignetting
+    col /= (1.+pow(length(uv*2.-1.),4.)*.04);
+    
     // Fade out
     col *= smoothstep(endTime+6., endTime+5., iTime);
     fragColor = vec4(col,1.);

@@ -106,7 +106,7 @@ vec2 blood(vec3 p) {
         d -= pow((noise(p*.7+1.)*.5+noise(p*1.7+100.)*.3+noise(p*2.7+100.)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-150.)*4.))+.03;
         return vec2(d, BLOOD);
     }
-    else return vec2(INFINITE, GROUND);
+    return vec2(INFINITE, GROUND);
 }
 
 
@@ -125,9 +125,8 @@ vec2 anvil(vec3 p) {
         vec2 dmat = vec2(d-.1, BLACK_METAL);
         
         return dmat;
-    } else {
-        return vec2(INFINITE,GROUND);
     }
+    return vec2(INFINITE,GROUND);
 }
 
 vec2 flower(vec3 p) {
@@ -341,14 +340,7 @@ vec2 map(vec3 p) {
 }
 
 vec3 skyColor(vec3 rd, vec2 uv, float night) {
-    vec3 col = vec3(1.);
-    
-    float vdots = max(dot(rd, sunDir), 0.);
-    
-    col += vec3(1.,.7,.3) * pow(vdots,1.);
-    col += vec3(1.,.5,.1) * pow(vdots,52.);
-    
-    col = vec3(1.) * night * night;
+    vec3 col = vec3(night * night);
     
     // mon
     vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
@@ -473,10 +465,8 @@ float fastTrace(vec3 ro, vec3 rd) {
     // Blood
     t = -(ro.y+.4) * m.y;// -(dot(ro,p.xyz)+p.w)/dot(rd,p.xyz);
     if (t > 0. && length((ro+rd*t).xz-anvilPos.xz)<10.) {
-        t = -t; // ???? WTF ????
         for(int i=0; i<128; i++) {
-            vec3 p = ro+rd*t;
-            float d = min(p.y,blood(p).x);
+            float d = blood(ro+rd*t).x;
             t += d;
             if (t > nf.y || abs(d) < 0.001) break;
         }
@@ -673,11 +663,7 @@ void main()
         vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
         col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);
     }
-    
 
-    // vignetting
-    col /= (1.+pow(length(uv*2.-1.),4.)*.04);
-    
     // gamma correction
     fragColor = vec4( pow(col, vec3(1./2.2)), 1.);
     
