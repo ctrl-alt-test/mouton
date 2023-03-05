@@ -20,7 +20,7 @@ in vec2 headRot;
 in float blink;
 in float camFocal;
 in float eyesSurprise;
-in float excited;
+in vec2 excited;
 in float fishEyeFactor;
 in float noseSize;
 
@@ -637,9 +637,11 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
 
     // Excited background
     if(dmat.y == GROUND) {
-        float theta = cos(atan(uv.x, uv.y)*15.+iTime*3.);
         float r = length(uv)*.5;
-        col = mix(col,  mix(vec3(1.,0.5,00), vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited);
+        float theta = cos(atan(uv.x, uv.y)*15.-iTime*3.-r*20.*excited.y);
+        vec3 c = mix(vec3(1.,0.5,00), vec3(.8,0.5,1.), (cos(r*5.+iTime*5.)*.5+.5)*excited.y);
+        //vec3 c = vec3(1.,0.5,00);
+        col = mix(col,  mix(c, vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited.x);
     }
 
     return col;
@@ -670,10 +672,10 @@ void main()
         p.y -= 1.4;
         p = rot(iTime*5.) * p;
         float size = 1.4+0.2*sin(iTime*20.);
-        size *= smoothstep(0.5,1.,excited);
+        size *= smoothstep(0.5,1.,excited.x);
         float star = star2d(p, size, .5);
         vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
-        col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited);
+        col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited.x);
     }
 
     // gamma correction

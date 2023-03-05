@@ -17,7 +17,7 @@ out vec2 headRot;
 out float blink;
 out float camFocal;
 out float eyesSurprise;
-out float excited;
+out vec2 excited;
 out float fishEyeFactor;
 out float noseSize;
 
@@ -40,7 +40,7 @@ void main(void)
     anvilPos = vec3(INFINITE);
     camFocal = 2.;
     blink = max(fract(iTime*.333), fract(iTime*.123+.1));
-    excited = 0.;
+    excited = vec2(0.);
     sunDir = normalize(vec3(3.5,1.,-1.));
     animationSpeed = vec3(1.,1.,1.);
     fishEyeFactor = 0.;
@@ -132,14 +132,14 @@ void main(void)
         camTa = mix(vec3(0., 3., 0.), vec3(-5., 5., -9.), transition);
     } else if (time < 65.) { // Excited!
         float time = time-58.;
-        excited = smoothstep(0.,.5,time);
+        excited.x = smoothstep(0.,.5,time);
         
         animationAmp = vec3(0.,0.,0.);
         blink = 0.;
         eyeDir = normalize(vec3(.3,0.,1.));
-        camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), excited);
+        camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), excited.x);
         camTa = vec3(0., 3., 0.);
-        camFocal = mix(4., 3., excited) + smoothstep(0.,7.,time)*.5;
+        camFocal = mix(4., 3., excited.x) + smoothstep(0.,7.,time)*.5;
     } else if (time < 70.) { // Panel run
         float time = time-65.;
         eyeDir = normalize(vec3(0.,0.,1.));
@@ -269,7 +269,7 @@ void main(void)
         camPos = vec3(0.,5.5, 2.);
         
         camTa = mix(vec3(-.5, 5.75, 0.), vec3(5., 2., -20.), transition);
-        excited = transition*.3;
+        excited.x = transition*.3;
         
     } else if (time < 137.) { // focus face / warning / flower
         float time = time-125.;
@@ -288,7 +288,8 @@ void main(void)
             flowerPos = vec3(4.,0.,-8.);
             camPos = vec3(0.,5.5, 2.);
             camTa = vec3(4., 3., -8.);
-            excited = .3;
+            excited.x = .3 + .2/12.;
+            excited.y = time/12.;
         } else { // sheep
             camPos = vec3(0.,2.4, -8.);
             camTa = vec3(0., 3., 0.);
@@ -354,6 +355,7 @@ void main(void)
         float transition = smoothstep(1.5,2.,time);
         camFocal = 2.5 + transition*3.5;
         anvilPos = vec3(7.,0.,-20.);
-        excited = transition*.5;
+        excited.x = transition*.5;
+        excited.y = 1.;
     }
 }
