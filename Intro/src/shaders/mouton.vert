@@ -206,7 +206,7 @@ void main(void)
         sheepPos = vec3(0.,0.,-11.);
         panelWarningPos = vec3(-5.,0.,-8.);
         
-        eyeDir = normalize(mix(vec3(1.,-.5,1.), vec3(0.,.5,1.), smoothstep(3.,3.5, time))); // Tired
+        eyeDir = normalize(mix(vec3(1.,-.5,1.), vec3(0.,.5,1.), smoothstep(2.8,3.2, time)));
         eyeDir = normalize(mix(eyeDir, vec3(1.,-.5,1.), smoothstep(6.5,7., time)));
         headRot.y = smoothstep(3.,3.5, time)*.6;
         headRot.x = smoothstep(3.,3.5, time)*smoothstep(8.,6., time)*.25*sin(time*3.);
@@ -315,6 +315,8 @@ void main(void)
         eyeDir = normalize(vec3(-.2,.2,1.));
         
         camFocal = 3.2 - time*.15;
+        excited.x = .1;
+        excited.y = 5.;
     } else if (time < 150.) { // Flower run
         float time = time-140.;
         eyeDir = normalize(vec3(0.,0.,1.));
