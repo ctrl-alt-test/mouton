@@ -526,7 +526,18 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
-        albedo = vec3(pupil);
+        
+        vec3 pos = n + eyeDir;
+        float center = smoothstep(.06, .1, length(pos));
+        float dist = smoothstep(.15, 0.7, length(pos));
+
+        float flower = abs(sin(atan(pos.y, pos.x) * 5.)) - dist*4.;
+        flower = smoothstep(0.449, 0.45, flower);
+        albedo = mix(vec3(0.), vec3(.75,0.5,1.)*.5, flower);
+        albedo = mix(vec3(.7, .7, 0.), albedo, center);
+        albedo *= smoothstep(135.2, 135.6, iTime);
+        albedo = mix(albedo, vec3(1.), pupil);
+        
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
         spe *= 0.;
     } else if(dmat.y == METAL) {
