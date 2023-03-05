@@ -359,7 +359,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.1;
-    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*1.*rnd.y+rnd.z*3.14)*.5+.5)*1.;
+    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*3.*rnd.y+rnd.z*3.14)*.5+.5)*1.;
     
     
     col += moon*smoothstep(.5,-1., sunDir.y);
