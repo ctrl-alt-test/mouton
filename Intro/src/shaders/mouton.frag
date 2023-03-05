@@ -289,7 +289,10 @@ vec2 sheep(vec3 p) {
         pp -= vec3(0.,-0.05 - pow(pp.x,2.)*5.,-.1);
         float ears = length(pp)-.15;
         ears = smax(ears, -(length(pp-vec3(0.,-.1,0.))-.12), .01);
-
+        pp.y *= .3;
+        pp.y -= -.11;
+        float earsClip =  length(pp)-.16;
+        
         //eyes
         pp = ph;
         pp.x = abs(ph.x)-.4;
@@ -311,6 +314,7 @@ vec2 sheep(vec3 p) {
         vec2 dmat = vec2( body, COTON);
         dmat = dmin(dmat, vec2(tail, COTON));
         dmat = dmin(dmat, vec2(hair, COTON));
+        dmat.x = smax(dmat.x, -earsClip, .15);
         dmat = dmin(dmat, vec2(legs, SKIN));
         dmat = dmin(dmat, vec2(head, SKIN));
         dmat = dmin(dmat, vec2(eyes, EYE));
