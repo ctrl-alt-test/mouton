@@ -622,6 +622,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
+    col = clamp(col,0.,1.);
 
     // Excited background
     if(dmat.y == GROUND) {
@@ -630,7 +631,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         col = mix(col,  mix(vec3(1.,0.5,00), vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited);
     }
 
-    return clamp(col,0.,1.);
+    return col;
 }
 
 void main()
