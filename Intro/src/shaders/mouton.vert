@@ -54,7 +54,7 @@ void main(void)
     {
         animationAmp = vec3(1.,.2, 1.); // Slow walk
         animationSpeed = vec3(1.,1.,.5);
-        eyeDir = normalize(vec3(0.,.5,1.)); // Tired
+        eyeDir = normalize(vec3(0.,.3,1.)); // Tired
         headRot.y = .25;
         
         camFocal = 4.;

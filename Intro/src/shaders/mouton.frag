@@ -193,6 +193,7 @@ vec2 panelWarning(vec3 p) {
     }
 }
 
+
 // return [distance, material]
 vec2 sheep(vec3 p) {
     p -= sheepPos;
@@ -524,7 +525,13 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     } else if (dmat.y == EYE) {
         sss *= .5;
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
-        float nde = dot(n, eyeDir);
+        
+        // compute eye space -> mat3(eyeDir, t, b)
+        vec3 t = cross(eyeDir, vec3(0.,1.,0.));
+        vec3 b = cross(eyeDir,t);
+        vec3 ne = n.z * eyeDir + n.x * t + n.y * b;
+        float nde = ne.z;
+        
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
         
         vec3 pos = n + eyeDir;
@@ -537,6 +544,33 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = mix(vec3(.7, .7, 0.), albedo, center);
         albedo *= smoothstep(135.2, 135.6, iTime);
         albedo = mix(albedo, vec3(1.), pupil);
+        
+        
+        //eye test
+        {
+            // parallax mapping
+            vec3 v = rd.z * eyeDir + rd.x * t + rd.y * b;
+            vec2 offset = v.xy / v.z * length(ne.xy) / length(ro-p) * 0.3;
+            ne.xy -= offset;
+        
+            float irisSize = .45 + eyesSurprise/2.;
+            float pupilSize = .2 + eyesSurprise/2.;
+            
+            // polar coordinate
+            float er = length(ne.xy);
+            float theta = atan(ne.x, ne.y);
+            
+            // iris
+            albedo = + mix(vec3(.5,.25,.1) , vec3(.1,.5,.2), smoothstep(pupilSize,irisSize,er)*.55); // brown to green
+            albedo *= vec3(1.) * ( (noise(vec3(theta*10., er*10., 0.))+noise(vec3(theta*20., er*20., 0.)))*.5 *.5+.5); // iris details
+            albedo *= vec3(1.) * pow(dot(sunDir, ne),4.)*30.+.5; // retro reflection
+            albedo *= smoothstep(pupilSize,pupilSize+0.01, er); // pupil
+            albedo += vec3(1.)  * pow(spe,vec3(800.))*3; // specular light
+            albedo = mix(albedo, vec3(1.), smoothstep(irisSize,irisSize+0.01, er)); // white eye
+            albedo *= smoothstep(0.0,0.05, abs(er-irisSize-0.0)+0.015); // black edge
+            
+            albedo *= smoothstep(1.,0.5,fre)*.25+.75; // little fresnel
+        }
         
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
         spe *= 0.;
@@ -664,6 +698,20 @@ void main()
     vec3 p = ro + rd * t;
     vec3 n = normal(p);
     vec3 col = shade(ro, rd, p, n, v);
+    
+    #if 0
+    if (map(p).y == EYE)
+     {
+     vec3 rro = p+n*.1;
+     vec3 rrd = reflect(rd,n);
+    // Trace
+    float t = fastTrace(rro,rrd);
+    vec3 rp = rro + rrd * t;
+    vec3 rn = normal(rp);
+     col = mix(col, shade(rro, rrd, rp, rn, v), .05);
+     }
+     #endif
+    
         
     // Excited stars
     {
