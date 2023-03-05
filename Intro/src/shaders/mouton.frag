@@ -506,34 +506,32 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec3 albedo = vec3(0.);
     if(dmat.y == GROUND) {
         albedo = vec3(3.);
-        sss = vec3(0.);
-        spe = vec3(0.);
+        sss *= 0.;
+        spe *= 0.;
     } else if (dmat.y == COTON) {
         albedo = vec3(.4);
-        sss *= vec3(1.) *(fre*.5+.5);
+        sss *= fre*.5+.5;
         emi = vec3(.35);
         spe = pow(spe, vec3(4.))*fre*.25;
     } else if (dmat.y == CLOGS) {
         albedo = vec3(.025);
-        sss = vec3(0.);
+        sss *= 0.;
         spe = pow(spe, vec3(80.))*fre*10.;
     } else if (dmat.y == EYE) {
         sss *= .5;
-        albedo = vec3(1.);
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         float nde = dot(n, eyeDir);
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
-        albedo *= pupil;
-        spe *= pupil;
+        albedo = vec3(pupil);
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
-        spe = pow(spe, vec3(80.))*fre*3.;
+        spe *= 0.;
     } else if(dmat.y == METAL) {
         albedo = vec3(1.);
-        sss = vec3(0.);
+        sss *= 0.;
         spe = pow(spe, vec3(8.))*fre*2.;
     } else if(dmat.y == PANEL) {
         vec3 p = p-panelWarningPos;
-        sss = vec3(0.);
+        sss *= 0.;
         spe = pow(spe, vec3(8.))*fre*10.;
         
         if (n.z > .5) {
@@ -548,7 +546,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         }
     } else if(dmat.y == PANEL_FOOD) {
         vec3 p = p-panelPos;
-        sss = vec3(0.);
+        sss *= 0.;
         spe = pow(spe, vec3(8.))*fre*10.;
         if (n.z > .5) {
             albedo = vec3(0.,0.,1.5);
@@ -576,11 +574,10 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         pr.zy = rot(.75) * pr.zy;
         albedo = mix(vec3(2.,.75,.0), vec3(2.,2.,.0), smoothstep(0.,.45, length(pr-vec3(0.,.3,0.))))*1.8;
         sss = vec3(0.01);
-        spe = vec3(0.);
+        spe *= 0.;
     } else if (dmat.y == TIGE) {
         albedo = vec3(0.,.05,.0);
-        sss *= vec3(1.);
-        spe *= vec3(1.)*fre;
+        spe *= fre;
     } else if (dmat.y == PETAL) {
         vec3 pr = p - flowerPos;
         pr.x += cos(3.1*.25+iTime)*3.1*.2;
@@ -588,22 +585,21 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         pr.zy = rot(.75) * pr.zy;
         albedo = mix(vec3(1.,1.,1.)+.5, vec3(.75,0.5,1.), smoothstep(0.5,1.1, length(pr-vec3(0.,.3,0.))))*2.;
        // albedo = vec3(1.,1.,1.)*3.;
-        sss *=0.0;
+        sss *= 0.;
         spe = pow(spe, vec3(4.))*fre*1.0;
     } else if(dmat.y == BLACK_METAL) {
         albedo = vec3(1.);
         diff *= vec3(.1)*fre;
         amb *= vec3(.1)*fre;
-        bnc *= vec3(0.0)*fre;
-        sss = vec3(0.);
+        bnc *= 0.;
+        sss *= 0.;
         spe = pow(spe, vec3(100.))*fre*2.;
     }  else if(dmat.y == BLOOD) {
         albedo = vec3(1.,.01,.01)*.3;
         float fre2 = fre*fre;
         diff *= vec3(3.);
         amb *= vec3(2.)*fre2;
-        bnc *= vec3(1.);
-        sss *= vec3(.0);
+        sss *= 0.;
         spe = vec3(1.,.3,.3) * pow(spe, vec3(500.))*5.;
     } 
     if (dmat.y == SKIN) {
