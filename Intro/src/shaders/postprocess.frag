@@ -72,6 +72,9 @@ void main(void)
     float luminance = dot(col, vec3(0.2126,0.7152,0.0722));
     col += (grain) * (1.-pow(luminance,.25)) * .1;
     */
+    
+    // color grading
+    col = pow(col, vec3(1.0,1.05,1.1));
 
     // fade in
     col *= smoothstep(0.,10., iTime);
