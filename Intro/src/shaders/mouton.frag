@@ -147,7 +147,7 @@ vec2 flower(vec3 p) {
             dmat = vec2(petals, PETAL);
         }
         
-        float tige = max(length(p.xz + vec2(cos(p.y*.25+iTime)*p.y*.2,-.075) )-smoothstep(3.1,0., p.y)*.05-0.02, p.y-3.1);
+        float tige = max(length(p.xz + vec2(cos(p.y*.25+iTime)*p.y*.2+0.02,-.1) )-smoothstep(3.1,0., p.y)*.05-0.02, p.y-3.1);
         if (tige < dmat.x) {
             dmat = vec2(tige, TIGE);
         }
@@ -638,7 +638,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     // Excited background
     if(dmat.y == GROUND) {
         float r = length(uv)*.5;
-        float theta = cos(atan(uv.x, uv.y)*15.-iTime*3.-r*20.*excited.y);
+        float theta = cos(atan(uv.x, uv.y)*15.-iTime*3.-r*30.*excited.y);
         vec3 c = mix(vec3(1.,0.5,00), vec3(.8,0.5,1.), (cos(r*5.+iTime*5.)*.5+.5)*excited.y);
         //vec3 c = vec3(1.,0.5,00);
         col = mix(col,  mix(c, vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited.x);

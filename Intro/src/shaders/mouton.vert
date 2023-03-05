@@ -328,19 +328,19 @@ void main(void)
         camFocal = 3.;
     } else if (time < 155.) { // Splash
         float time = time-150.;
+        float fall = smoothstep(.3,.2,time);
         
         eyeDir = normalize(vec3(0.,0.,1.));
-        sheepPos = vec3(0.,-smoothstep(0.25,0.4,time)*4.8,-22.-time*2.);
+        sheepPos = vec3(0.,(1.-fall)*-4.8,-22.-time*2.);
         flowerPos = vec3(2.,0.,-30.);
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
         
-        camPos = vec3(-20.,6.,-13.) + vec3(cos(time*72.),cos(time*64.),sin(time*48.))*3.* smoothstep(0.4,0.41,time)* smoothstep(0.7,0.1,time);
+        camPos = vec3(-20.,6.,-13.) + vec3(cos(time*72.),cos(time*64.),sin(time*48.))*3.* smoothstep(0.3,0.31,time)* smoothstep(0.7,0.1,time);
         camTa = vec3(3., 2., -23.);
         camFocal = mix(4.,4.2, smoothstep(0.,5.,time));
         
-        float fall = smoothstep(.4,.1,time)*13.;
-        anvilPos = vec3(0.,fall+0.,-22.);
+        anvilPos = vec3(0.,fall*13.,-22.);
 
     } else { // ending screen
         float time = time-155.;
