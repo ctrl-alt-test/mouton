@@ -520,7 +520,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     } else if (dmat.y == CLOGS) {
         albedo = vec3(.025);
         sss *= 0.;
-        spe = pow(spe, vec3(80.))*fre*10.;
+        spe = pow(spe, vec3(80.))*fre*20.;
     } else if (dmat.y == EYE) {
         sss *= .5;
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
@@ -530,13 +530,13 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         if (ndz > 0. || blink > .95) dmat.y = SKIN;
         spe *= 0.;
     } else if(dmat.y == METAL) {
-        albedo = vec3(1.);
+        albedo = vec3(.85,.95,1.);
         sss *= 0.;
         spe = pow(spe, vec3(8.))*fre*2.;
     } else if(dmat.y == PANEL) {
         vec3 p = p-panelWarningPos;
         sss *= 0.;
-        spe = pow(spe, vec3(8.))*fre*10.;
+        spe = pow(spe, vec3(8.))*fre*20.;
         
         if (n.z > .5) {
             float tri = triangle(p-vec3(0.,7.5,-5.), vec2(1.3,.2), .01);
@@ -546,7 +546,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             albedo = mix(albedo, vec3(2.), smoothstep(0.005,.0, tri));
             albedo = mix(albedo, vec3(0.), symbol);
         } else {
-            albedo = vec3(1.);
+            albedo = vec3(.85,.95,1.);
         }
     } else if(dmat.y == PANEL_FOOD) {
         vec3 p = p-panelPos;
