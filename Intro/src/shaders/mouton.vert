@@ -329,7 +329,7 @@ void main(void)
         float time = time-150.;
         
         eyeDir = normalize(vec3(0.,0.,1.));
-        sheepPos = vec3(0.,-smoothstep(0.25,0.4,time)*4.5,-22.);
+        sheepPos = vec3(0.,-smoothstep(0.25,0.4,time)*4.8,-22.-time*2.);
         flowerPos = vec3(2.,0.,-30.);
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
