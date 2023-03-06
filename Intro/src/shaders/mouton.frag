@@ -192,7 +192,7 @@ vec2 panelWarning(vec3 p) {
         return vec2(INFINITE, GROUND);
     }
 }
-
+float headDist = 0.;
 
 // return [distance, material]
 vec2 sheep(vec3 p) {
@@ -301,8 +301,8 @@ vec2 sheep(vec3 p) {
         
         float eyeCap = abs(eyes)-.01;
         //eyeCap = smax(eyeCap, -ph.z-1.1-smoothstep(0.95,0.96,blink)*.4, .01);
-        eyeCap = smax(eyeCap, smin(-abs(ph.y+ph.z*(-eyeDir.y*.1+.05))+.2-smoothstep(0.95,0.96,blink)*.4, -ph.z-1.-eyesSurprise*2., .2), .01);
-        eyeCap = smin(eyeCap, head, .04);
+        eyeCap = smax(eyeCap, smin(-abs(ph.y+ph.z*(.025))+.25-smoothstep(0.95,0.96,blink)*.3+cos(iTime*1.)*.02, -ph.z-1.-eyesSurprise*2., .2), .01);
+        eyeCap = smin(eyeCap, head, .02);
         head = min(head, eyeCap);
         
 
@@ -330,6 +330,7 @@ vec2 sheep(vec3 p) {
         dmat = dmin(dmat, vec2(clogs, CLOGS));
         dmat = dmin(dmat, vec2(ears, SKIN));
         
+        headDist = head;
         return dmat;
     } else {
         return vec2(body, COTON);
@@ -533,12 +534,14 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         sss *= .5;
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
         
-        // compute eye space -> mat3(eyeDir, t, b)
-        vec3 t = cross(eyeDir, vec3(0.,1.,0.));
-        vec3 b = cross(eyeDir,t);
-        t = cross(b, eyeDir);
+        vec3 dir = normalize(eyeDir + (noise(vec3(iTime,iTime*.5,iTime*1.5))*2.-1.)*.01);
         
-        vec3 ne = n.z * eyeDir + n.x * t + n.y * b;
+        // compute eye space -> mat3(eyeDir, t, b)
+        vec3 t = cross(dir, vec3(0.,1.,0.));
+        vec3 b = cross(dir,t);
+        t = cross(b, dir);
+        
+        vec3 ne = n.z * dir + n.x * t + n.y * b;
         float nde = ne.z;
         
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
@@ -570,8 +573,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             float theta = atan(ne.x, ne.y);
             
             // iris
-            albedo = + mix(vec3(.5,.25,.1) , vec3(.0,.5,.2), smoothstep(pupilSize,irisSize,er)*.3); // brown to green
-            albedo *= vec3(1.) * ( (noise(vec3(theta*10., er*10., 0.))+noise(vec3(theta*20., er*20., 0.)))*.5 *.4+.5); // iris details
+            albedo = + mix(vec3(.5,.25,.1) , vec3(.0,.8,.4), smoothstep(pupilSize,irisSize,er)*.3); // brown to green
+            albedo *= vec3(1.) * ( (noise(vec3(theta*10., er*10., 0.))+noise(vec3(theta*20., er*20., 0.)))*.5 *.3+.5); // iris details
             albedo *= vec3(1.) * pow(max(0.,dot(sunDir, ne)),4.)*50.+.5; // retro reflection
             albedo *= smoothstep(pupilSize,pupilSize+0.01, er); // pupil
             albedo += vec3(1.)  * pow(spe,vec3(800.))*3; // specular light
@@ -579,6 +582,10 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             albedo *= smoothstep(0.0,0.05, abs(er-irisSize-0.0)+0.02); // black edge
             
             albedo *= smoothstep(1.,0.5,fre)*.25+.75; // little fresnel
+            
+            // shadow on the edges of the eyes
+            map(p);
+            albedo *= smoothstep(0.,0.02, headDist)*.4+.6;
         }
         
        // if (ndz > 0. || blink > .95) dmat.y = SKIN;
@@ -664,7 +671,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = vec3(1.,.7,.5)*1.;
         amb *= vec3(1.,.75,.75);
         sss = pow(sss, vec3(.5,2.5,5.0)+2.)*2.;// * fre;// * pow(fre, 1.);
-        spe = pow(spe, vec3(4.))*fre*.02;
+        spe = pow(spe, vec3(16.))*fre*0.1;
     }
     
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);

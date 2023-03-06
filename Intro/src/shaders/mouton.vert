@@ -208,7 +208,7 @@ void main(void)
         
         eyeDir = normalize(mix(vec3(1.,-.5,1.), vec3(0.,.5,1.), smoothstep(3.,3.5, time))); // Tired
         eyeDir = normalize(mix(eyeDir, vec3(1.,-.5,1.), smoothstep(6.5,7., time)));
-        headRot.y = smoothstep(3.,3.5, time)*.6;
+        headRot.y = smoothstep(2.,3.5, time)*.6;
         headRot.x = smoothstep(3.,3.5, time)*smoothstep(8.,6., time)*.25*sin(time*3.);
         animationAmp = vec3(1.,.2,.5);
         animationSpeed = vec3(0.,.2,1.);
@@ -322,6 +322,7 @@ void main(void)
         flowerPos = vec3(.0,-0.5,-30.);
         animationAmp = vec3(1.,1.,.5);
         animationSpeed = vec3(3.,1.5,8.);
+        eyesSurprise = .1;
         float t = smoothstep(0., 10., time);
         camPos = vec3(-2., 3.5,mix(-10.,-33., t));
         camTa = vec3(2., 2, -3.-time*2.);
@@ -358,4 +359,6 @@ void main(void)
         excited.x = transition*.5;
         excited.y = 1.;
     }
+    
+   // eyeDir = normalize(eyeDir + vec3(cos(iTime),0., sin(iTime))*.3);
 }
