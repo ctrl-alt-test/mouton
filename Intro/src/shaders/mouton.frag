@@ -298,6 +298,13 @@ vec2 sheep(vec3 p) {
         pp = ph;
         pp.x = abs(ph.x)-.4;
         float eyes = length(pp*vec3(1.,1.,1.-eyesSurprise)-vec3(0.,0.,-1.)) - .3;
+        
+        float eyeCap = abs(eyes)-.01;
+        //eyeCap = smax(eyeCap, -ph.z-1.1-smoothstep(0.95,0.96,blink)*.4, .01);
+        eyeCap = smax(eyeCap, smin(-abs(ph.y+ph.z*(-eyeDir.y*.1+.05))+.2-smoothstep(0.95,0.96,blink)*.4, -ph.z-1.-eyesSurprise*2., .2), .01);
+        eyeCap = smin(eyeCap, head, .04);
+        head = min(head, eyeCap);
+        
 
         // nostrils
         pp.x = abs(ph.x)-.2;
@@ -521,7 +528,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     } else if (dmat.y == CLOGS) {
         albedo = vec3(.025);
         sss *= 0.;
-        spe = pow(spe, vec3(80.))*fre*20.;
+        spe = pow(spe, vec3(80.))*fre*10.;
     } else if (dmat.y == EYE) {
         sss *= .5;
         float ndz = dot(n, normalize(vec3(0.,0.,1.)));
@@ -529,6 +536,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         // compute eye space -> mat3(eyeDir, t, b)
         vec3 t = cross(eyeDir, vec3(0.,1.,0.));
         vec3 b = cross(eyeDir,t);
+        t = cross(b, eyeDir);
+        
         vec3 ne = n.z * eyeDir + n.x * t + n.y * b;
         float nde = ne.z;
         
@@ -550,29 +559,29 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         {
             // parallax mapping
             vec3 v = rd.z * eyeDir + rd.x * t + rd.y * b;
-            vec2 offset = v.xy / v.z * length(ne.xy) / length(ro-p) * 0.3;
+            vec2 offset = v.xy / v.z * pow(length(ne.xy),2.) / length(ro-p) * .8;
             ne.xy -= offset;
         
-            float irisSize = .45 + eyesSurprise/2.;
-            float pupilSize = .2 + eyesSurprise/2.;
+            float irisSize = .35 + eyesSurprise;
+            float pupilSize = .15 + eyesSurprise;
             
             // polar coordinate
             float er = length(ne.xy);
             float theta = atan(ne.x, ne.y);
             
             // iris
-            albedo = + mix(vec3(.5,.25,.1) , vec3(.1,.5,.2), smoothstep(pupilSize,irisSize,er)*.55); // brown to green
-            albedo *= vec3(1.) * ( (noise(vec3(theta*10., er*10., 0.))+noise(vec3(theta*20., er*20., 0.)))*.5 *.5+.5); // iris details
-            albedo *= vec3(1.) * pow(dot(sunDir, ne),4.)*30.+.5; // retro reflection
+            albedo = + mix(vec3(.5,.25,.1) , vec3(.0,.5,.2), smoothstep(pupilSize,irisSize,er)*.3); // brown to green
+            albedo *= vec3(1.) * ( (noise(vec3(theta*10., er*10., 0.))+noise(vec3(theta*20., er*20., 0.)))*.5 *.4+.5); // iris details
+            albedo *= vec3(1.) * pow(max(0.,dot(sunDir, ne)),4.)*50.+.5; // retro reflection
             albedo *= smoothstep(pupilSize,pupilSize+0.01, er); // pupil
             albedo += vec3(1.)  * pow(spe,vec3(800.))*3; // specular light
             albedo = mix(albedo, vec3(1.), smoothstep(irisSize,irisSize+0.01, er)); // white eye
-            albedo *= smoothstep(0.0,0.05, abs(er-irisSize-0.0)+0.015); // black edge
+            albedo *= smoothstep(0.0,0.05, abs(er-irisSize-0.0)+0.02); // black edge
             
             albedo *= smoothstep(1.,0.5,fre)*.25+.75; // little fresnel
         }
         
-        if (ndz > 0. || blink > .95) dmat.y = SKIN;
+       // if (ndz > 0. || blink > .95) dmat.y = SKIN;
         spe *= 0.;
     } else if(dmat.y == METAL) {
         albedo = vec3(.85,.95,1.);
