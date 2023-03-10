@@ -566,7 +566,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             ne.xy -= offset * smoothstep(0.01,.0, dot(ne,rd));
             
             float irisSize = .325 + eyesSurprise*0.5;
-            float pupilSize = .125 + eyesSurprise*.5;
+            float pupilSize = .16 + eyesSurprise*.5;
             
             // polar coordinate
             float er = length(ne.xy);
