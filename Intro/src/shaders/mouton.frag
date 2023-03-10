@@ -544,6 +544,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         vec3 ne = n.z * dir + n.x * t + n.y * b;
         float nde = ne.z;
         
+        /*
         float pupil = smoothstep(-0.953,-.952, nde-eyesSurprise/2.);
         
         vec3 pos = n + eyeDir;
@@ -556,7 +557,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = mix(vec3(.7, .7, 0.), albedo, center);
         albedo *= smoothstep(135.2, 135.6, iTime);
         albedo = mix(albedo, vec3(1.), pupil);
-        
+        */
         
         //eye test
         {
@@ -587,13 +588,11 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             albedo += vec3(1.)  * pow(max(0.,dot(n,normalize(vec3(0.2,-.2,-1.)))),1000.)*2.; // specular light
             albedo = clamp(albedo,0.,1.);
             //albedo += 0.25-smoothstep(1.,0.5,fre)*.25; // little fresnel
-            
             // shadow on the edges of the eyes
             map(p);
             albedo *= smoothstep(0.,0.02, headDist)*.4+.6;
         }
         
-       // if (ndz > 0. || blink > .95) dmat.y = SKIN;
         spe *= 0.;
     } else if(dmat.y == METAL) {
         albedo = vec3(.85,.95,1.);
@@ -672,7 +671,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         sss *= 0.;
         spe = vec3(1.,.3,.3) * pow(spe, vec3(500.))*5.;
     } 
-    if (dmat.y == SKIN) {
+    else if (dmat.y == SKIN) {
         albedo = vec3(1.,.7,.5)*1.;
         amb *= vec3(1.,.75,.75);
         sss = pow(sss, vec3(.5,2.5,5.0)+2.)*2.;// * fre;// * pow(fre, 1.);
