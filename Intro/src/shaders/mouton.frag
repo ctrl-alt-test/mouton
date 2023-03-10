@@ -563,8 +563,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             // parallax mapping
             vec3 v = rd.z * eyeDir + rd.x * t + rd.y * b;
             vec2 offset = v.xy / v.z * length(ne.xy) / length(ro-p) * .5;
-            ne.xy -= offset;
-        
+            ne.xy -= offset * smoothstep(0.01,.0, dot(ne,rd));
+            
             float irisSize = .325 + eyesSurprise*0.5;
             float pupilSize = .125 + eyesSurprise*.5;
             
