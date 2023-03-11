@@ -301,9 +301,8 @@ vec2 sheep(vec3 p) {
         // nostrils
         pp.x = abs(ph.x)-.2;
         pp.xz = rot(-.45) * pp.xz;
-        float nostrils = torus(pp-vec3(-0.7,-1.2,-2.), vec2(.15*noseSize,.05));
-
-
+        head = smax(head, -length(pp-vec3(-0.7,-1.2,-2.05)) + .14*noseSize, .1);
+        head = smin(head, torus(pp-vec3(-0.7,-1.2,-1.94), vec2(.14*noseSize,.05)), .05);
 
         // tail
         float tail =  capsule(p-vec3(0.,-.1,cos(p.y-.7)*.5),vec3(cos(iTime*animationSpeed.z)*animationAmp.z,.2,5.), vec3(0.,2.,4.9), .2);
@@ -318,7 +317,6 @@ vec2 sheep(vec3 p) {
         dmat = dmin(dmat, vec2(legs, SKIN));
         dmat = dmin(dmat, vec2(head, SKIN));
         dmat = dmin(dmat, vec2(eyes, EYE));
-        dmat = dmin(dmat, vec2(nostrils, SKIN));
         dmat = dmin(dmat, vec2(clogs, CLOGS));
         dmat = dmin(dmat, vec2(ears, SKIN));
         
