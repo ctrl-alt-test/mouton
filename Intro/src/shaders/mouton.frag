@@ -481,6 +481,36 @@ float fastTrace(vec3 ro, vec3 rd) {
     return result;
 }
 
+float blinnphong(float vdoth, float n)
+{
+    return pow(vdoth, n) * (n + 2.) / (8. * PI);
+}
+
+float specular(vec3 v, vec3 l, float size)
+{
+    vec3 h = normalize(l + v);
+    float vdoth = clamp(dot(v, h), 0., 1.);
+    return
+        blinnphong(vdoth, 30./(1.+size)) * 2. +
+        blinnphong(vdoth, 20000./(1.+size)) * .5;
+}
+
+vec3 envmap(vec3 v, vec3 l, vec3 l2) {
+    float spot = 0.;
+    spot += specular(v, normalize(l + vec3(0., 0., 0.)), 0.);
+    spot += specular(v, normalize(l + vec3(0.2, 0., 0.)), 2.);
+    spot += specular(v, normalize(l + vec3(0.2, 0., 0.2)), 4.);
+    spot += specular(v, l2, 20.) * .1;
+    spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 80.) * .3;
+    spot /= 5.;
+    
+    vec3 color = mix(
+        mix(vec3(.3,.3,0.), vec3(.1), smoothstep(-.7, .2, v.y)),
+        vec3(0.3, 0.65, 1.), smoothstep(-.0, 1., v.y));
+    color += spot * vec3(1., 0.9, .8);
+    return color;
+}
+
 // /!\ Not energy conservative!
 vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec2 dmat = map(p);
@@ -498,6 +528,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
     vec3 sss = vec3(.5) * mix(fastAO(p, rd, .3, .75), fastAO(p, sunDir, .3, .75), 0.5);
     vec3 spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
+    vec3 envm = vec3(0.);
     
     //sss = vec3(1.) * calcSSS(p,rd);
     vec3 amb = vec3(.4,.45,.5)*1. * ao;
@@ -532,9 +563,15 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = mix(vec3(0.), vec3(.75,0.5,1.)*.5, flower);
         albedo = mix(vec3(.7, .7, 0.), albedo, center);
         albedo *= smoothstep(135.2, 135.6, iTime);
-        albedo = mix(albedo, vec3(1.), pupil);
+        albedo = mix(albedo, vec3(.8), pupil);
         
-        if (ndz > 0. || blink > .95) dmat.y = SKIN;
+        if (ndz > 0. || blink > .95) { 
+            dmat.y = SKIN;
+        } else {
+            vec3 light1 = normalize(vec3(1., 1.5, -1.));
+            vec3 light2 = vec3(-light1.x, light1.y*.5, light1.z);
+            envm = envmap(reflect(rd, n), light1, light2) * mix(0.1, .2, pupil);
+        }
         spe *= 0.;
     } else if(dmat.y == METAL) {
         albedo = vec3(.85,.95,1.);
@@ -620,7 +657,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         spe = pow(spe, vec3(4.))*fre*.02;
     }
     
-    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
+    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
+    // col = envm;
     //col = diff;//diff + bnc + amb + sss;
     //col = albedo * spe;
    //col = diff;
