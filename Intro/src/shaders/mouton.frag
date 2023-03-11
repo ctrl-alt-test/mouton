@@ -558,24 +558,24 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         float center = smoothstep(.06, .1, length(pos));
         float dist = smoothstep(.15, 0.7, length(pos));
 
-        float flower = abs(sin(atan(pos.y, pos.x) * 5.)) - dist*4.;
-        flower = smoothstep(0.449, 0.45, flower);
-        albedo = mix(vec3(0.), vec3(.75,0.5,1.)*.5, flower);
-        albedo = mix(vec3(.7, .7, 0.), albedo, center);
-        albedo *= smoothstep(135.2, 135.6, iTime);
-        albedo = mix(albedo, vec3(.8), pupil);
+        float shape = abs(sin(atan(pos.y, pos.x) * 5.)) - dist*4.;
+        shape = smoothstep(0.449, 0.45, shape);
+        vec3 flower = mix(vec3(0.), vec3(.75,0.5,1.)*.5, shape);
+        flower = mix(vec3(.7, .7, 0.), flower, center);
+        flower *= smoothstep(135.2, 135.6, iTime);
+        albedo = vec3(pupil);
         
-        if (ndz > 0. || blink > .95) { 
+        if (ndz > 0. || blink > .95) {
             dmat.y = SKIN;
         } else {
             // Update the normals inside the pupil to get lots of reflections
-            n = mix(normalize(n + (eyeDir + n)*4), n, pupil);
+            n = mix(normalize(n + (eyeDir + n)*4.), n, pupil);
             vec3 light1 = normalize(vec3(1., 1.5, -1.));
             vec3 light2 = vec3(-light1.x, light1.y*.5, light1.z);
             envm = envmap(reflect(rd, n), light1, light2) * mix(.15, .2, pupil);
+            envm += flower;
         }
         spe *= 0.;
-        //spe = pow(spe, vec3(8.))*fre*2.;
     } else if(dmat.y == METAL) {
         albedo = vec3(.85,.95,1.);
         sss *= 0.;
