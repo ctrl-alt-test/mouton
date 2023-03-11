@@ -352,12 +352,10 @@ void main(void)
         panelWarningPos = vec3(-1.,0.,-8.);
         flowerPos = vec3(1.,0.,-25.);
         
-        camTa = vec3(2., 3.8, -18.);
+        camTa = vec3(2., 3.6, -18.);
         camPos = vec3(5.,5.,2.);
         float transition = smoothstep(1.5,2.,time);
-        camFocal = 2.5 + transition*3.5;
+        camFocal = 2.5 + transition*4.2;
         anvilPos = vec3(7.,0.,-20.);
-        excited.x = transition*.5;
-        excited.y = 1.;
     }
 }
