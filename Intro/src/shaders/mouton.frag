@@ -346,21 +346,19 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     
     // mon
     vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
-    float moon = smoothstep(0.151,0.15, length(uv-moonPos));
-    moon *= smoothstep(0.15,0.1501, length(uv-moonPos-vec2(.1,0.025)));
-    moon += exp(-length(uv-moonPos)*2.)*.1;
-    moon *= smoothstep(.5,.0, sunDir.y);
-    
+    float moonCircle = smoothstep(0.151,0.15, length(uv-moonPos));
+    float moon = moonCircle * smoothstep(0.15,0.1501, length(uv-moonPos-vec2(.05,0.05))+0.004*noise(100.*vec3(uv-moonPos, 0.)));
+
     // stars
-    vec2 p = uv*200.;
+    vec2 p = rot(iTime*0.0002)*uv*200.;
     vec2 fp = fract(p)-.5;
     vec2 ip = floor(p);
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
-    float s = rnd.z*.1;
-    moon += smoothstep(s,0.+s*.01, length(fp+(rnd.xy-.5)) ) *(cos(iTime*3.*rnd.y+rnd.z*3.14)*.5+.5)*1.;
-    
-    
-    col += moon*smoothstep(.5,-1., sunDir.y);
+    float s = rnd.z*.06;
+
+    col += vec3(1., 1., .1) * moon*smoothstep(.5,-1., sunDir.y);
+    col += smoothstep(s,s*.01, length(fp+(rnd.xy-.5)) ) * (1.-moonCircle);
+    col += exp(-length(uv-moonPos)*2.)*.1;
     
     return col;
 }
