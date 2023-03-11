@@ -492,7 +492,7 @@ float specular(vec3 v, vec3 l, float size)
     float vdoth = clamp(dot(v, h), 0., 1.);
     return
         blinnphong(vdoth, 30./(1.+size)) * 2. +
-        blinnphong(vdoth, 20000./(1.+size)) * .5;
+        blinnphong(vdoth, 20000./(1.+size));
 }
 
 vec3 envmap(vec3 v, vec3 l, vec3 l2) {
@@ -501,7 +501,7 @@ vec3 envmap(vec3 v, vec3 l, vec3 l2) {
     spot += specular(v, normalize(l + vec3(0.2, 0., 0.)), 2.);
     spot += specular(v, normalize(l + vec3(0.2, 0., 0.2)), 4.);
     spot += specular(v, l2, 20.) * .1;
-    spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 80.) * .3;
+    spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 80.) * .5;
     spot /= 5.;
     
     vec3 color = mix(
@@ -568,11 +568,14 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         if (ndz > 0. || blink > .95) { 
             dmat.y = SKIN;
         } else {
+            // Update the normals inside the pupil to get lots of reflections
+            n = mix(normalize(n + (eyeDir + n)*4), n, pupil);
             vec3 light1 = normalize(vec3(1., 1.5, -1.));
             vec3 light2 = vec3(-light1.x, light1.y*.5, light1.z);
-            envm = envmap(reflect(rd, n), light1, light2) * mix(0.1, .2, pupil);
+            envm = envmap(reflect(rd, n), light1, light2) * mix(.15, .2, pupil);
         }
         spe *= 0.;
+        //spe = pow(spe, vec3(8.))*fre*2.;
     } else if(dmat.y == METAL) {
         albedo = vec3(.85,.95,1.);
         sss *= 0.;
