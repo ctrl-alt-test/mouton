@@ -355,7 +355,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     // mon
     vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
     float moonCircle = smoothstep(0.151,0.15, length(uv-moonPos));
-    float moon = moonCircle * smoothstep(0.15,0.1501, length(uv-moonPos-vec2(.05,0.05))+0.004*noise(100.*vec3(uv-moonPos, 0.)));
+    float moon = moonCircle * smoothstep(0.13,0.2701, length(uv-moonPos-vec2(.05,0.05))+0.004*noise(100.*vec3(uv-moonPos, 0.)));
 
     // stars
     vec2 p = rot(iTime*0.0002)*uv*200.;
@@ -364,7 +364,7 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.06;
 
-    col += vec3(1., 1., .1) * moon*smoothstep(.5,-1., sunDir.y);
+    col += vec3(1., .9, .1) * moon*smoothstep(.5,-1., sunDir.y);
     col += smoothstep(s,s*.01, length(fp+(rnd.xy-.5)) ) * (1.-moonCircle);
     col += exp(-length(uv-moonPos)*2.)*.1;
     
