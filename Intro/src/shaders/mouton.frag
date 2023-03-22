@@ -745,8 +745,39 @@ void main()
     }
 
     // gamma correction
-    fragColor = vec4( pow(col, vec3(1./2.2)), 1.);
+    col = pow(col, vec3(1./2.2));
+
+
+    // ----------------------------------------------------------------
+    // Post processing pass
+    // ----------------------------------------------------------------
+    // color grading
+    col = pow(col, vec3(1.0,1.05,1.1));
+
+    // fade in
+    col *= smoothstep(0.,10., iTime);
     
+    const float endTime = 156.;
+
+    // Circle to black
+    float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
+    float tt = max(.137, smoothstep(endTime+1., endTime, iTime));
+    col *= smoothstep(tt, tt-.005, circle);
+    
+    // Looney tunes
+    float f = circle;
+    float alpha = smoothstep(0.135, .136, f) * smoothstep(endTime+1., endTime+2., iTime);
+    f = fract(23. * pow(f, .25));
+    f -= smoothstep(0.95, 0.99, f);
+    vec3 col2 = mix(vec3(1.,.6,.0), vec3(1.,.0,0.), pow(f,1.));
+    col = mix(col, col2, alpha);
+    
+    // vignetting
+    col /= (1.+pow(length(uv*2.-1.),4.)*.04);
+    
+    // Fade out
+    col *= smoothstep(endTime+6., endTime+5., iTime);
+    fragColor = vec4(col,1.);
 }
 
 

@@ -19,8 +19,7 @@
 // Global defines
 #define SOUND_ON 
 #define USE_FXAA
-#define USE_POSTPROCESS
-//#define USE_CREATE_SHADER_PROGRAM // Save almost 40 bytes, require OpenGL 4.1 (Anat : doesn't work on my emulated windows)
+#define USE_CREATE_SHADER_PROGRAM // Save almost 40 bytes, require OpenGL 4.1 (Anat : doesn't work on my emulated windows)
 
 
 #include "glext.h"
@@ -33,9 +32,6 @@
 static int shaderMain;
 #ifdef USE_FXAA
 static int shaderFXAA;
-#endif
-#ifdef USE_POSTPROCESS
-static int shaderPostProcess;
 #endif
 
 // Sound 
@@ -122,25 +118,9 @@ void entrypoint(void)
 	#endif
 #endif
 
-
-	// Post process
-#ifdef USE_POSTPROCESS
-	#ifdef USE_CREATE_SHADER_PROGRAM
-			shaderPostProcess = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_FRAGMENT_SHADER, 1, &postprocess_frag);
-	#else
-		f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
-		((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &postprocess_frag, 0);
-		((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
-
-		shaderPostProcess = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
-		((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderPostProcess, f);
-		((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderPostProcess);
-	#endif
-#endif
-
 	// init sound
 #ifdef SOUND_ON
-	#if 1 // 4 bytes
+	#if 1 // 4 more bytes
 		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)_4klang_render, lpSoundBuffer, 0, 0);
 	#else
 		_4klang_render(lpSoundBuffer);
@@ -153,7 +133,7 @@ void entrypoint(void)
 #endif
 
 	// because all render passes need exactly the same input, we can do it once for all
-#ifdef USE_POSTPROCESS || USE_FXAA
+#ifdef USE_FXAA
 	((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -193,17 +173,6 @@ void entrypoint(void)
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
 		glRects(-1, -1, 1, 1);
 #endif
-
-		// Post processing
-#ifdef USE_POSTPROCESS
-		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderPostProcess);
-		((PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i"))(0, 0);
-		int loc = ((PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation"))(shaderPostProcess, VAR_iTime);
-		((PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f"))(loc, time);
-		glRects(-1, -1, 1, 1);
-#endif
-
 		SwapBuffers(hDC);
 
 #ifdef SOUND_ON
