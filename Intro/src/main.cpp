@@ -20,6 +20,7 @@
 #define SOUND_ON 
 #define USE_FXAA
 #define USE_POSTPROCESS
+//#define USE_CREATE_SHADER_PROGRAM // Save almost 40 bytes, require OpenGL 4.1 (Anat : doesn't work on my emulated windows)
 
 
 #include "glext.h"
@@ -108,25 +109,33 @@ void entrypoint(void)
 
 	// FXAA
 #ifdef USE_FXAA
-	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
-	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &fxaa_frag, 0);
-	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
+	#ifdef USE_CREATE_SHADER_PROGRAM
+		shaderFXAA = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_FRAGMENT_SHADER, 1, &fxaa_frag);
+	#else
+		f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
+		((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &fxaa_frag, 0);
+		((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
 
-	shaderFXAA = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
-	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderFXAA, f);
-	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderFXAA);
+		shaderFXAA = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
+		((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderFXAA, f);
+		((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderFXAA);
+	#endif
 #endif
 
 
 	// Post process
 #ifdef USE_POSTPROCESS
-	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
-	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &postprocess_frag, 0);
-	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
+	#ifdef USE_CREATE_SHADER_PROGRAM
+			shaderPostProcess = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_FRAGMENT_SHADER, 1, &postprocess_frag);
+	#else
+		f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
+		((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &postprocess_frag, 0);
+		((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
 
-	shaderPostProcess = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
-	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderPostProcess, f);
-	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderPostProcess);
+		shaderPostProcess = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
+		((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderPostProcess, f);
+		((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderPostProcess);
+	#endif
 #endif
 
 	// init sound
