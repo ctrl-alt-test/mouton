@@ -38,7 +38,6 @@ uniform float iTime;
 const float PI = acos(-1.);
 const float INFINITE = 9e7;
 
-float hash(float p);
 float hash1( vec2 p );
 vec3 hash3(vec3 p);
 float noise( in vec3 x );
@@ -696,12 +695,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     }
     
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
-    // col = envm;
-    //col = diff;//diff + bnc + amb + sss;
-    //col = albedo * spe;
-   //col = diff;
-    //col = amb;
-   // col = sss;
+
     // fog
     float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
@@ -808,10 +802,6 @@ float shadow( vec3 ro, vec3 rd, float mint, float tmax )
 // ---------------------------------------------
 // Hash & Noise
 // ---------------------------------------------
-float hash( float p ) 
-{
-    return fract(sin(p)*43758.5453123);
-}
 vec3 hash3(vec3 p) {
     uvec3 x = uvec3((p)*100000.);
     const uint k = 1103515245U; 
