@@ -12,8 +12,11 @@
 #endif
 #include <windows.h>
 #include <mmsystem.h>
+#include <mmreg.h>
 
 #include "definitions.h"
+
+
 
 #include "glext.h"
 #pragma data_seg(".shader")
@@ -21,11 +24,51 @@
 
 #pragma data_seg(".pids")
 
-// static allocation saves a few bytes
+// Shaders
 static int shaderMain;
 static int shaderFXAA;
 static int shaderPostProcess;
-// static HDC hDC;
+
+// Sound 
+#define SOUND_ON 
+
+#ifdef SOUND_ON
+#include "4klang.h"
+static SAMPLE_TYPE	lpSoundBuffer[MAX_SAMPLES * 2];
+static HWAVEOUT	hWaveOut;
+#pragma data_seg(".wavefmt")
+WAVEFORMATEX WaveFMT =
+{
+#ifdef FLOAT_32BIT	
+	WAVE_FORMAT_IEEE_FLOAT,
+#else
+	WAVE_FORMAT_PCM,
+#endif		
+	2, // channels
+	SAMPLE_RATE, // samples per sec
+	SAMPLE_RATE * sizeof(SAMPLE_TYPE) * 2, // bytes per sec
+	sizeof(SAMPLE_TYPE) * 2, // block alignment;
+	sizeof(SAMPLE_TYPE) * 8, // bits per sample
+	0 // extension not needed
+};
+#pragma data_seg(".wavehdr")
+WAVEHDR WaveHDR =
+{
+	(LPSTR)lpSoundBuffer,
+	MAX_SAMPLES * sizeof(SAMPLE_TYPE) * 2,			// MAX_SAMPLES*sizeof(float)*2(stereo)
+	0,
+	0,
+	0,
+	0,
+	0,
+	0
+};
+MMTIME MMTime =
+{
+	TIME_SAMPLES,
+	0
+};
+#endif
 
 #pragma code_seg(".main")
 void entrypoint(void)
@@ -76,14 +119,31 @@ void entrypoint(void)
 	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderPostProcess, f);
 	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderPostProcess);
 
+	// init sound
+#ifdef SOUND_ON
+	#if 1 // 4 bytes
+		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)_4klang_render, lpSoundBuffer, 0, 0);
+	#else
+		_4klang_render(lpSoundBuffer);
+	#endif
+	waveOutOpen(&hWaveOut, WAVE_MAPPER, &WaveFMT, NULL, 0, CALLBACK_NULL);
+	waveOutPrepareHeader(hWaveOut, &WaveHDR, sizeof(WaveHDR));
+	waveOutWrite(hWaveOut, &WaveHDR, sizeof(WaveHDR));
+#else
+	long startTime = timeGetTime();
+#endif
 
 
 	// main loop
-	long startTime = timeGetTime();
 	do
 	{
+#ifdef SOUND_ON
+		waveOutGetPosition(hWaveOut, &MMTime, sizeof(MMTIME));
+		float time = ((float)MMTime.u.sample) / 44100.0f;
+#else
 		long currentTime = timeGetTime();
 		float time = (float)(currentTime - startTime) * 0.001f;
+#endif
 
 		#if !(DESPERATE)
 			// do minimal message handling so windows doesn't kill your application
@@ -128,7 +188,11 @@ void entrypoint(void)
 
 		SwapBuffers(hDC);
 
-	} while(!GetAsyncKeyState(VK_ESCAPE));
+#ifdef SOUND_ON
+	} while(MMTime.u.sample < MAX_SAMPLES && !GetAsyncKeyState(VK_ESCAPE));
+#else
+	} while (!GetAsyncKeyState(VK_ESCAPE));
+#endif
 
 	ExitProcess(0);
 }
