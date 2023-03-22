@@ -16,6 +16,10 @@
 
 #include "definitions.h"
 
+// Global defines
+#define SOUND_ON 
+#define USE_FXAA
+#define USE_POSTPROCESS
 
 
 #include "glext.h"
@@ -26,12 +30,14 @@
 
 // Shaders
 static int shaderMain;
+#ifdef USE_FXAA
 static int shaderFXAA;
+#endif
+#ifdef USE_POSTPROCESS
 static int shaderPostProcess;
+#endif
 
 // Sound 
-#define SOUND_ON 
-
 #ifdef SOUND_ON
 #include "4klang.h"
 static SAMPLE_TYPE	lpSoundBuffer[MAX_SAMPLES * 2];
@@ -101,6 +107,7 @@ void entrypoint(void)
 	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderMain);
 
 	// FXAA
+#ifdef USE_FXAA
 	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
 	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &fxaa_frag, 0);
 	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
@@ -108,9 +115,11 @@ void entrypoint(void)
 	shaderFXAA = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
 	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderFXAA, f);
 	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderFXAA);
+#endif
 
 
 	// Post process
+#ifdef USE_POSTPROCESS
 	f = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
 	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(f, 1, &postprocess_frag, 0);
 	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(f);
@@ -118,6 +127,7 @@ void entrypoint(void)
 	shaderPostProcess = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
 	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderPostProcess, f);
 	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderPostProcess);
+#endif
 
 	// init sound
 #ifdef SOUND_ON
@@ -133,6 +143,12 @@ void entrypoint(void)
 	long startTime = timeGetTime();
 #endif
 
+	// because all render passes need exactly the same input, we can do it once for all
+#ifdef USE_POSTPROCESS || USE_FXAA
+	((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#endif
 
 	// main loop
 	do
@@ -159,32 +175,25 @@ void entrypoint(void)
 		glRects(-1, -1, 1, 1);
 
 		// two pass FXAA
-		glBindTexture(GL_TEXTURE_2D, 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#ifdef USE_FXAA
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderFXAA);
 		((PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i"))(0, 0);
 		glRects(-1, -1, 1, 1);
 
-		glBindTexture(GL_TEXTURE_2D, 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
-		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderFXAA);
 		glRects(-1, -1, 1, 1);
+#endif
 
 		// Post processing
-
-		glBindTexture(GL_TEXTURE_2D, 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#ifdef USE_POSTPROCESS
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
-		((PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture"))(GL_TEXTURE0);
 		((PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram"))(shaderPostProcess);
 		((PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i"))(0, 0);
 		int loc = ((PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation"))(shaderPostProcess, VAR_iTime);
 		((PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f"))(loc, time);
 		glRects(-1, -1, 1, 1);
+#endif
 
 		SwapBuffers(hDC);
 
