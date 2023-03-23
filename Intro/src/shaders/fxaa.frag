@@ -3,12 +3,13 @@ out vec4 fragColor;
 const vec2 iResolution = vec2(1280.,720.);
 
 
-uniform sampler2D prevPass;
+uniform sampler2D tex;
 
-
-
-
-vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
+void main(void)
+{
+    vec2 rcpFrame = 1./iResolution;
+    vec2 texcoord = gl_FragCoord.xy * rcpFrame;
+    vec4 uv = vec4( texcoord, texcoord - (rcpFrame * 0.5));
     
     vec3 rgbNW = textureLod(tex, uv.zw, 0.0).xyz;
     vec3 rgbNE = textureLod(tex, uv.zw + vec2(1,0)*rcpFrame.xy, 0.0).xyz;
@@ -26,10 +27,7 @@ vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
     float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
     float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
 
-    vec2 dir;
-    dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
-    dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
-
+    vec2 dir = vec2( -((lumaNW + lumaNE) - (lumaSW + lumaSE)), ((lumaNW + lumaSW) - (lumaNE + lumaSE)));
     float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + (1./128.));
     
     dir = min(vec2( 8.,  8.),
@@ -45,17 +43,8 @@ vec3 FxaaPixelShader( vec4 uv, sampler2D tex, vec2 rcpFrame) {
     
     float lumaB = dot(rgbB, luma);
 
-    if((lumaB < lumaMin) || (lumaB > lumaMax)) return rgbA;
-    
-    return rgbB; 
-}
-
-void main(void)
-{
-    vec2 invRes = 1./iResolution;
-    vec2 texcoord = gl_FragCoord.xy * invRes;
-    vec4 uv = vec4( texcoord, texcoord - (invRes * 0.5));
-    
-    vec3 col = FxaaPixelShader(uv, prevPass, invRes);
-    fragColor = vec4(col,1.);
+    if((lumaB < lumaMin) || (lumaB > lumaMax))
+        fragColor = vec4(rgbA,1.);
+    else
+        fragColor = vec4(rgbB,1.); 
 }

@@ -571,7 +571,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         vec2 offset = v.xy / v.z * length(ne.xy) / length(ro-p) * .4;
         ne.xy -= offset * smoothstep(0.01,.0, dot(ne,rd));
         
-        float irisSize = .3;
+        const float i_irisSize = .3;
         float pupilSize = .2 + eyesSurprise*.5;
         
         // polar coordinate
@@ -579,21 +579,21 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         float theta = atan(ne.x, ne.y);
         
         // iris
-        vec3 c = mix(vec3(.5,.3,.1) , vec3(.0,.8,1), smoothstep(0.16,irisSize,er)*.3+cos(theta*15.)*.04);
+        vec3 c = mix(vec3(.5,.3,.1) , vec3(.0,.8,1), smoothstep(0.16,i_irisSize,er)*.3+cos(theta*15.)*.04);
         float filaments = smoothstep(-.9,1.,noise(vec3(er*10.,theta*30.+cos(er*50.+noise(vec3(theta))*50.)*1.,0.)));
         filaments += smoothstep(-.9,1.,noise(vec3(er*10.,theta*40.+cos(er*30.+noise(vec3(theta))*50.)*2.,0.)));
-        albedo = c * (filaments*.5+.5) * (smoothstep(irisSize,irisSize-.01, er)); // brown to green
+        albedo = c * (filaments*.5+.5) * (smoothstep(i_irisSize,i_irisSize-.01, er)); // brown to green
         albedo *= vec3(1.,.8,.7) * pow(max(0.,dot(normalize(vec3(3.,1.,-1.)), ne)),8.)*300.+.5; // retro reflection
         float pupil = smoothstep(pupilSize,pupilSize+0.02, er);
         albedo *= pupil; // pupil
         albedo += pow(spe,vec3(800.))*3; // specular light
-        albedo = mix(albedo, vec3(.8), smoothstep(irisSize-0.01,irisSize, er)); // white eye
-        albedo = mix(c*.3, albedo, smoothstep(0.0,0.05, abs(er-irisSize-0.0)+0.01)); // black edge
+        albedo = mix(albedo, vec3(.8), smoothstep(i_irisSize-0.01,i_irisSize, er)); // white eye
+        albedo = mix(c*.3, albedo, smoothstep(0.0,0.05, abs(er-i_irisSize-0.0)+0.01)); // black edge
         
         // fake envmap reflection
         vec3 light1 = normalize(vec3(1., 1.5, -1.));
         vec3 light2 = vec3(-light1.x, light1.y*.5, light1.z);
-        n = mix(normalize(n + (eyeDir + n)*4.), n, smoothstep(irisSize,irisSize+0.02, er));
+        n = mix(normalize(n + (eyeDir + n)*4.), n, smoothstep(i_irisSize,i_irisSize+0.02, er));
         envm = envmap(reflect(rd, n), light1, light2) * mix(.15, .2, pupil) *sqrt(fre)*2.5;
         
         // shadow on the edges of the eyes
@@ -715,10 +715,9 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
 
 void main()
 {
-    vec2 invRes = vec2(1.) / iResolution;
-    vec2 uv = (gl_FragCoord.xy) * invRes;
+    vec2 uv = (gl_FragCoord.xy) / iResolution;
     vec2 v = uv*2.-1.;
-    v.x *= iResolution.x * invRes.y;
+    v.x *= iResolution.x / iResolution.y;
         
     // Setup ray
     vec3 ro = camPos;
