@@ -17,10 +17,10 @@ in vec3 camPos;
 in vec3 camTa;
 in vec3 eyeDir;
 in vec2 headRot;
+in vec2 excited;
 in float blink;
 in float camFocal;
 in float eyesSurprise;
-in vec2 excited;
 in float fishEyeFactor;
 in float noseSize;
 

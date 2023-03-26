@@ -14,10 +14,10 @@ out vec3 camPos;
 out vec3 camTa;
 out vec3 eyeDir;
 out vec2 headRot;
+out vec2 excited;
 out float blink;
 out float camFocal;
 out float eyesSurprise;
-out vec2 excited;
 out float fishEyeFactor;
 out float noseSize;
 
