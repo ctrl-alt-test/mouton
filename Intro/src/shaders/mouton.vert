@@ -78,7 +78,6 @@ void main(void)
         eyeDir = vec3(0.,.5,1.); // Tired
         headRot.y = .25;
         
-        camFocal = 2.;
         camPos = vec3(5.+time*.5, 2., 0.+time*.5);
         camTa = vec3(0., 2., 0.);
     } else if( time < 50.) { // Day 'n night walking
@@ -115,14 +114,10 @@ void main(void)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
     } else if (time < 58.) { // Panel food!
         float time = time-55.;
-        sheepPos = vec3(0.);
         panelPos = vec3(-5.,0.,-8.);
         
         eyeDir = vec3(.3,.0,1.);
         eyesSurprise = .2;
-        animationAmp = vec3(0.,0.0, 1.); // Slow walk
-        animationSpeed = vec3(3.,1.5,6.);
-        
         
         float transition = smoothstep(0.,.5,time);
         
@@ -186,7 +181,6 @@ void main(void)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
     } else if (time < 89.) { // Panel warning!
         float time = time-85.;
-        sheepPos = vec3(0.);
         panelWarningPos = vec3(-5.,0.,-8.);
         
         eyeDir = vec3(.5,-0.15,1.);

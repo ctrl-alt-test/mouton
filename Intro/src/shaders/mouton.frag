@@ -946,7 +946,7 @@ float smax( float a, float b, float k )
 float triangle( vec3 p, vec2 h, float r )
 {
   vec3 q = abs(p);
-  return max(q.z-h.y,smax(smax(p.x*0.866025+p.y*0.5, -p.x*0.866025+p.y*0.5, r),-p.y,r)-h.x*0.5);
+  return max(q.z-h.y,smax(smax(p.x*0.9+p.y*0.5, -p.x*0.9+p.y*0.5, r),-p.y,r)-h.x*0.5);
 }
 
 float UnevenCapsule2d( vec2 p, float r1, float r2, float h )
