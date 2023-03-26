@@ -54,7 +54,7 @@ void main(void)
     {
         animationAmp = vec3(1.,.2, 1.); // Slow walk
         animationSpeed = vec3(1.,1.,.5);
-        eyeDir = normalize(vec3(0.,.45,1.)); // Tired
+        eyeDir = vec3(0.,.45,1.); // Tired
         headRot.y = .25;
         
         camFocal = 4.;
@@ -65,7 +65,7 @@ void main(void)
         float time = time-10.;
         animationAmp = vec3(1.,.2, .25); // Slow walk
         animationSpeed = vec3(1.,1.,2.);
-        eyeDir = normalize(vec3(0.,.5,1.)); // Tired
+        eyeDir = vec3(0.,.5,1.); // Tired
         headRot.y = .25;
         
         camFocal = 4.;
@@ -75,7 +75,7 @@ void main(void)
         float time = time-20.;
         animationAmp = vec3(1.,.2, .25); // Slow walk
         animationSpeed = vec3(1.,1.,2.);
-        eyeDir = normalize(vec3(0.,.5,1.)); // Tired
+        eyeDir = vec3(0.,.5,1.); // Tired
         headRot.y = .25;
         
         camFocal = 2.;
@@ -85,7 +85,7 @@ void main(void)
         float time = time-30.;
         animationAmp = vec3(1.,.2, .25); // Slow walk
         animationSpeed = vec3(1.,1.,2.);
-        eyeDir = normalize(vec3(0.,.5,1.)); // Tired
+        eyeDir = vec3(0.,.5,1.); // Tired
         headRot.y = .25;
         
         //float t = 1.-exp( -40.*pow(time/20.,10.) )*30.;
@@ -104,7 +104,7 @@ void main(void)
         animationAmp = vec3(1.-t,.2*(1.-t), 1.); // Slow walk
         animationSpeed = vec3(1.,1.,.5);
         
-        eyeDir = normalize(vec3(t*.3,.3-t*.3,1.));
+        eyeDir = vec3(t*.3,.3-t*.3,1.);
         eyesSurprise = smoothstep(4.6,4.8,time)*.2;
         
         camFocal = 4.;
@@ -118,7 +118,7 @@ void main(void)
         sheepPos = vec3(0.);
         panelPos = vec3(-5.,0.,-8.);
         
-        eyeDir = normalize(vec3(.3,.0,1.));
+        eyeDir = vec3(.3,.0,1.);
         eyesSurprise = .2;
         animationAmp = vec3(0.,0.0, 1.); // Slow walk
         animationSpeed = vec3(3.,1.5,6.);
@@ -136,13 +136,13 @@ void main(void)
         
         animationAmp = vec3(0.,0.,0.);
         blink = 0.;
-        eyeDir = normalize(vec3(.3,0.,1.));
+        eyeDir = vec3(.3,0.,1.);
         camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), excited.x);
         camTa = vec3(0., 3., 0.);
         camFocal = mix(4., 3., excited.x) + smoothstep(0.,7.,time)*.5;
     } else if (time < 70.) { // Panel run
         float time = time-65.;
-        eyeDir = normalize(vec3(0.,0.,1.));
+        eyeDir = vec3(0.,0.,1.);
         sheepPos = vec3(0.,0.,-time*3.-2.);
         panelPos = vec3(-5.,0.,-8.);
         animationAmp = vec3(1.,1.,.5);
@@ -158,7 +158,7 @@ void main(void)
         
         float x = mod(time,8.);
         float lf = smoothstep(0.5,1.,x)*smoothstep(2.8,2.5,x) - smoothstep(4.,4.5,x)*smoothstep(5.8,5.5,x) + cos(iTime)*.2;
-        eyeDir = normalize(vec3(lf,cos(iTime*.5)*.1+.1,1.));
+        eyeDir = vec3(lf,cos(iTime*.5)*.1+.1,1.);
         
         fishEyeFactor = .3;
         camFocal = 2.5;
@@ -176,7 +176,7 @@ void main(void)
         animationAmp = vec3(0.,1.*(1.-t*.5), 1.); // Slow walk
         animationSpeed = vec3(3.,1.5,6.);
         
-        eyeDir = normalize(vec3(t*.5,.3-t*.45,1.));
+        eyeDir = vec3(t*.5,.3-t*.45,1.);
         
         camFocal = 4.;
         camPos = vec3(0.,3., -4.);
@@ -189,7 +189,7 @@ void main(void)
         sheepPos = vec3(0.);
         panelWarningPos = vec3(-5.,0.,-8.);
         
-        eyeDir = normalize(vec3(.5,-0.15,1.));
+        eyeDir = vec3(.5,-0.15,1.);
         animationAmp = vec3(0.,0.5, 1.); // Slow walk
         animationSpeed = vec3(3.,1.5,6.);
         
@@ -207,7 +207,7 @@ void main(void)
         panelWarningPos = vec3(-5.,0.,-8.);
         
         eyeDir = normalize(mix(vec3(1.,-.5,1.), vec3(0.,.5,1.), smoothstep(2.8,3.2, time)));
-        eyeDir = normalize(mix(eyeDir, vec3(1.,-.5,1.), smoothstep(6.5,7., time)));
+        eyeDir = mix(eyeDir, vec3(1.,-.5,1.), smoothstep(6.5,7., time));
         headRot.y = smoothstep(3.,3.5, time)*.6;
         headRot.x = smoothstep(3.,3.5, time)*smoothstep(8.,6., time)*.25*sin(time*3.);
         animationAmp = vec3(1.,.2,.5);
@@ -220,7 +220,7 @@ void main(void)
         float up = smoothstep(6.,9.,time);
         sheepPos = vec3(0.,0.,time*.25-11.);
         panelWarningPos = vec3(-2.,0.,-8.);
-        eyeDir = normalize(vec3(-.5,.25-up,1.));
+        eyeDir = vec3(-.5,.25-up,1.);
         headRot.y = .5-up*1.;
         animationAmp = vec3(1.,.2,.5);
         animationSpeed = vec3(-1.,1.,1.)*.5;
@@ -239,7 +239,7 @@ void main(void)
             camPos = vec3(0.,5.5, 2.);
             camTa = vec3(0., 5.75, 0.);
         }
-        eyeDir = normalize(vec3(0.,-.1,1.));
+        eyeDir = vec3(0.,-.1,1.);
         camFocal = 3. + time*.1;
     } else if (time < 116.) { // looking around
         float time = time-109.;
@@ -248,7 +248,7 @@ void main(void)
         animationSpeed = vec3(0.);
         
         eyeDir = normalize(vec3(t*.7,0.,1.));
-        eyeDir = normalize(mix(eyeDir, vec3(-0.3,.2,1.), smoothstep(5.2,5.4,time)));
+        eyeDir = mix(eyeDir, vec3(-0.3,.2,1.), smoothstep(5.2,5.4,time));
 
         headRot.x = t * 0.25;
         eyesSurprise = smoothstep(6.,6.2,time)*.2;
@@ -298,7 +298,7 @@ void main(void)
         if (iTime % 4 == 0) p = 1. - p;
         headRot.x = -p*.1;
         eyeDir = normalize(mix(vec3(0.1,-.25,1.), vec3(-.2,.2,1.), p));
-        eyeDir = normalize(eyeDir + vec3(cos(time*10.),cos(time*5.),1.)*.01);
+        eyeDir = eyeDir + vec3(cos(time*10.),cos(time*5.),1.)*.01;
         
     } else if (time < 140.) { // decision taken
         float time = time-137.;
@@ -312,14 +312,14 @@ void main(void)
         headRot.x = -.1;
         headRot.y = sin(time*2.)*.1;
         eyesSurprise = smoothstep(0.,3.,time)*.1;
-        eyeDir = normalize(vec3(-.2,.2,1.));
+        eyeDir = vec3(-.2,.2,1.);
         
         camFocal = 3.2 - time*.15;
         excited.x = .1;
         excited.y = 5.;
     } else if (time < 150.) { // Flower run
         float time = time-140.;
-        eyeDir = normalize(vec3(0.,0.,1.));
+        eyeDir = vec3(0.,0.,1.);
         sheepPos = vec3(0.,0.,-time*2.-2.);
         flowerPos = vec3(.0,-0.5,-30.);
         animationAmp = vec3(1.,1.,.5);
@@ -331,7 +331,7 @@ void main(void)
     } else if (time < 155.) { // Splash
         float time = time-150.;
         
-        eyeDir = normalize(vec3(0.,0.,1.));
+        eyeDir = vec3(0.,0.,1.);
         sheepPos = vec3(0.,(1.-smoothstep(.3,.25,time))*-4.8,-22.-time*2.);
         flowerPos = vec3(2.,0.,-30.);
         animationAmp = vec3(1.,1.,.5);
@@ -346,7 +346,7 @@ void main(void)
     } else { // ending screen
         float time = time-155.;
         
-        eyeDir = normalize(vec3(0.,0.,1.));
+        eyeDir = vec3(0.,0.,1.);
         sheepPos = vec3(INFINITE);
         panelWarningPos = vec3(-1.,0.,-8.);
         flowerPos = vec3(1.,0.,-25.);
@@ -357,4 +357,5 @@ void main(void)
         camFocal = 2.5 + transition*4.2;
         anvilPos = vec3(7.,0.,-20.);
     }
+    eyeDir=normalize(eyeDir);
 }
