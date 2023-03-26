@@ -971,8 +971,8 @@ float UnevenCapsule2d( vec2 p, float r1, float r2, float h )
 }
 float star2d(in vec2 p, in float r, in float rf)
 {
-    const vec2 k1 = vec2(0.809016994375, -0.587785252292);
-    const vec2 k2 = vec2(-k1.x,k1.y);
+    vec2 k1 = vec2(0.81, -0.59);
+    vec2 k2 = vec2(-k1.x,k1.y);
     p.x = abs(p.x);
     p -= 2.0*max(dot(k1,p),0.0)*k1;
     p -= 2.0*max(dot(k2,p),0.0)*k2;

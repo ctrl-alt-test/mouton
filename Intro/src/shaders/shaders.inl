@@ -640,7 +640,7 @@ const char *mouton_frag =
  "}"
  "float F(vec2 v,float y,float m)"
  "{"
-   "const vec2 f=vec2(.809016994375,-.587785252292),c=vec2(-f.x,f.y);"
+   "vec2 f=vec2(.81,-.59),c=vec2(-f.x,f.y);"
    "v.x=abs(v.x);"
    "v-=2.*max(dot(f,v),0.)*f;"
    "v-=2.*max(dot(c,v),0.)*c;"
