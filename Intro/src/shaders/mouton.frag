@@ -223,7 +223,6 @@ vec2 sheep(vec3 p) {
         vec4 legsRot = vec4(b * (1.-b), d * (1.-d), a * (1.-a), c * (1.-c));
           
         vec4 legsPos = t*.5 - vec4(b, d, a, c);
-        // legsPos += t*.5;
         legsPos *= animationAmp.x;
         
         vec3 pl = p;
@@ -721,17 +720,13 @@ void main()
     vec3 col = shade(ro, rd, p, n, v);
         
     // Excited stars
-    {
-        vec2 p = v*5.;
-        p.x = abs(p.x-.3)-1.5;
-        p.y -= 1.4;
-        p = rot(iTime*5.) * p;
-        float size = 1.4+0.2*sin(iTime*20.);
-        size *= smoothstep(0.5,1.,excited.x);
-        float star = star2d(p, size, .5);
-        vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p, size*.5, .5)))*1.3;
-        col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited.x);
-    }
+    vec2 p2 = vec2(abs(v.x*5.-.3)-1.5, v.y*5.-1.4);
+    p2 = rot(iTime*5.) * p2;
+    float size = 1.4+0.2*sin(iTime*20.);
+    size *= smoothstep(0.5,1.,excited.x);
+    float star = star2d(p2, size, .5);
+    vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p2, size*.5, .5)))*1.3;
+    col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited.x);
 
     // gamma correction
     col = pow(col, vec3(1./2.2));
