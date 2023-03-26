@@ -216,24 +216,14 @@ vec2 sheep(vec3 p) {
         // Legs
         float t = mod(iTime*animationSpeed.x,2.);
         float l = smoothstep(0.,.5,t) * smoothstep(1.,.5,t);
-        vec4 legsRot = vec4(0.);
-        vec4 legsPos = vec4(0.);
         float a = smoothstep(0.,.5,t);
         float b = smoothstep(.5,1.,t);
         float c = smoothstep(1.,1.5,t);
         float d = smoothstep(1.5,2.,t);
-        legsRot.z = a * (1.-a);
-        legsRot.x = b * (1.-b);
-        
-        legsRot.w = c * (1.-c);
-        legsRot.y = d * (1.-d);
+        vec4 legsRot = vec4(b * (1.-b), d * (1.-d), a * (1.-a), c * (1.-c));
           
-        //legsPos += smoothstep(0.,2.,t);
-        legsPos += t*.5;
-        legsPos.x -= b;
-        legsPos.z -= a;
-        legsPos.y -= d;
-        legsPos.w -= c;
+        vec4 legsPos = t*.5 - vec4(b, d, a, c);
+        // legsPos += t*.5;
         legsPos *= animationAmp.x;
         
         vec3 pl = p;
@@ -639,7 +629,7 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
             float squ = box(p-vec3(0.,.1,-5.), vec3(0.8,.8, 1));
             float symbol = 0.;
             p.xy = rot(.8) * p.xy;
-            float x = .04;
+            const float x = .04;
             symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(-x,-.6), .1,.05,1.));
             symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(-x,.5), .16,.135,0.15));
             symbol *= smoothstep(0.,0.01,UnevenCapsule2d(p.xy-vec2(-x-.08,.56), .001,.02,0.2));
