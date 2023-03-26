@@ -240,28 +240,28 @@ vec2 sheep(vec3 p) {
         pl.x -= .8;
         pl.z -= 2. + legsPos.x;
         pl.yz = rot(legsRot.x) * pl.yz;
-        float legs = cappedCone(pl-vec3(0.,0.,0.), .7, .3, .2);
+        float legs = cappedCone(pl, .7, .3, .2);
         float clogs = cappedCone(pl-vec3(0.,-0.8,0.), .2, .35, .3);
 
         pl = p;
         pl.x += 1.;
         pl.z -= 2. + legsPos.y;
         pl.yz = rot(legsRot.y) * pl.yz;
-        legs = min(legs, cappedCone(pl-vec3(0.,0.,0.), .7, .3, .2));
+        legs = min(legs, cappedCone(pl, .7, .3, .2));
         clogs = min(clogs, cappedCone(pl-vec3(0.,-0.8,0.), .2, .35, .3));
 
         pl = p;
         pl.x -= 1.;
         pl.z -= 4. + legsPos.z;
         pl.yz = rot(legsRot.z) * pl.yz;
-        legs = min(legs, cappedCone(pl-vec3(0.,0.,0.), .7, .3, .2));
+        legs = min(legs, cappedCone(pl, .7, .3, .2));
         clogs = min(clogs, cappedCone(pl-vec3(0.,-0.8,0.), .2, .35, .3));
 
         pl = p;
         pl.x += 1.;
         pl.z -= 4. + legsPos.w;
         pl.yz = rot(legsRot.w) * pl.yz;
-        legs = min(legs, cappedCone(pl-vec3(0.,0.,0.), .7, .3, .2));
+        legs = min(legs, cappedCone(pl, .7, .3, .2));
         clogs = min(clogs, cappedCone(pl-vec3(0.,-0.8,0.), .2, .35, .3));
 
         // Head
@@ -270,7 +270,7 @@ vec2 sheep(vec3 p) {
         ph.zy = rot(sin(iTime*animationSpeed.y)*0.25*animationAmp.y-headRot.y) * ph.zy;
 
         float head = length(ph-vec3(0.,-1.3,-1.2)) - 1.;
-        head = smin(head, length(ph-vec3(0.,0.,0.)) - .5, 1.8);
+        head = smin(head, length(ph) - .5, 1.8);
 
 
         // hair 
