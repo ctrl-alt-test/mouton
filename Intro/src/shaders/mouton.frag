@@ -824,7 +824,7 @@ vec3 hash3(vec3 p) {
     x = ((x>>8U)^x.yzx)*k;
     x = ((x>>8U)^x.yzx)*k;
     
-    return vec3(x)*(1.0/float(0xffffffffU));
+    return vec3(x)*(1.0/float(-1U));
 }
 
 float hash1( float n )
