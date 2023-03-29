@@ -321,21 +321,11 @@ vec2 sheep(vec3 p) {
 
 
 vec2 map(vec3 p) {
-    vec2 dmat = vec2(p.y, GROUND);
-    
-    dmat = dmin(dmat, sheep(p));
-    dmat = dmin(dmat, flower(p));
-    dmat = dmin(dmat, panelFood(p));
-    dmat = dmin(dmat, panelWarning(p));
-    dmat = dmin(dmat, anvil(p));
-    dmat = dmin(dmat, blood(p));
-    
-    return dmat;
+    return dmin( dmin( dmin( dmin( dmin( dmin(vec2(p.y, GROUND), sheep(p)), flower(p)), panelFood(p)), panelWarning(p)), anvil(p)), blood(p));
 }
 
 vec3 skyColor(vec3 rd, vec2 uv, float night) {
-    vec3 col = vec3(night * night);
-    
+
     // mon
     vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
     float moonCircle = smoothstep(0.151,0.15, length(uv-moonPos));
@@ -348,21 +338,17 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.06;
 
-    col += vec3(1., .9, .1) * moon*smoothstep(.5,-1., sunDir.y);
-    col += smoothstep(s,s*.01, length(fp+(rnd.xy-.5)) ) * (1.-moonCircle);
-    col += exp(-length(uv-moonPos)*2.)*.1;
+    return  vec3(1., .9, .1) * moon*smoothstep(.5,-1., sunDir.y) + smoothstep(s,s*.01, length(fp+(rnd.xy-.5)) ) * (1.-moonCircle) +  exp(-length(uv-moonPos)*2.)*.1 *pow(night,2.);
     
-    return col;
 }
 
 float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
     float occ = 0.0;
     float sca = 1.0;
     
-    const int NBITE = 2;
-    for( int i=1; i<=NBITE; i++ )
+    for( int i=1; i<3; i++ )
     {
-        float h = float(i)/NBITE * maxDist;
+        float h = float(i)*.5 * maxDist;
         float d = map( pos + h*nor ).x;
         occ += (h-d)*sca;
         sca *= .95;
@@ -678,9 +664,8 @@ void main()
         spe = pow(spe, vec3(100.))*fre*2.;
     }  else if(dmat.y == BLOOD) {
         albedo = vec3(1.,.01,.01)*.3;
-        float fre2 = fre*fre;
         diff *= vec3(3.);
-        amb *= vec3(2.)*fre2;
+        amb *= vec3(2.)*fre*fre;
         sss *= 0.;
         spe = vec3(1.,.3,.3) * pow(spe, vec3(500.))*5.;
     } 
@@ -691,16 +676,13 @@ void main()
         spe = pow(spe, vec3(4.))*fre*.02;
     }
     
-    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
-
     // fog
-    col = clamp(mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t)), 0., 1.);
+    vec3 col = clamp(mix((albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night, skyColor(rd,v, night), smoothstep(90.,100.,t)), 0., 1.);
 
     // Excited background
     if(dmat.y == GROUND) {
-        vec2 uv = uv*2.-1.;
-        float r = length(uv)*.5;
-        float theta = cos(atan(uv.x, uv.y)*15.-iTime*3.-r*30.*excited.y);
+        float r = length(v)*.5;
+        float theta = cos(atan(v.x, v.y)*15.-iTime*3.-r*30.*excited.y);
         vec3 c = mix(vec3(1.,0.5,00), vec3(.8,0.5,1.), (cos(r*5.+iTime*5.)*.5+.5)*excited.y);
         //vec3 c = vec3(1.,0.5,00);
         col = mix(col,  mix(c, vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited.x);
@@ -853,19 +835,16 @@ float cappedCone( vec3 p, float h, float r1, float r2 )
 float capsule( vec3 p, vec3 a, vec3 b, float r )
 {
   vec3 pa = p - a, ba = b - a;
-  float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
-  return length( pa - ba*h ) - r;
+  return length( pa - ba*clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 ) ) - r;
 }
 float torus( vec3 p, vec2 t )
 {
-  vec2 q = vec2(length(p.xy)-t.x,p.z);
-  return length(q)-t.y;
+  return length(vec2(length(p.xy)-t.x,p.z))-t.y;
 }
 float ellipsoid( vec3 p, vec3 r )
 {
   float k0 = length(p/r);
-  float k1 = length(p/(r*r));
-  return k0*(k0-1.0)/k1;
+  return k0*(k0-1.0)/length(p/(r*r));
 }
 
 float smin( float d1, float d2, float k )
@@ -882,8 +861,7 @@ float smax( float a, float b, float k )
 }
 float triangle( vec3 p, vec2 h, float r )
 {
-  vec3 q = abs(p);
-  return max(q.z-h.y,smax(smax(p.x*0.9+p.y*0.5, -p.x*0.9+p.y*0.5, r),-p.y,r)-h.x*0.5);
+  return max(abs(p.z)-h.y,smax(smax(p.x*0.9+p.y*0.5, -p.x*0.9+p.y*0.5, r),-p.y,r)-h.x*0.5);
 }
 
 float UnevenCapsule2d( vec2 p, float r1, float r2, float h )
