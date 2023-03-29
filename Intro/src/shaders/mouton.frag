@@ -803,6 +803,7 @@ void main()
         albedo *= smoothstep(0.,0.015, headDist)*.4+.6;
         
         // flower
+        /*
         float shape = abs(sin(theta * 5.)) - smoothstep(.15, 0.7, er)*4.;
         shape = smoothstep(0.449, 0.45, shape);
         vec3 flower = mix(vec3(0.), vec3(.75,0.5,1.)*.5, shape);
@@ -810,6 +811,7 @@ void main()
         flower *= smoothstep(135.2, 135.6, iTime);
         
         albedo += flower;
+        */
         
         spe *= 0.;
     } else if(dmat.y == METAL) {
@@ -899,8 +901,7 @@ void main()
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
 
     // fog
-    col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
-    col = clamp(col,0.,1.);
+    col = clamp(mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t)), 0., 1.);
 
     // Excited background
     if(dmat.y == GROUND) {
