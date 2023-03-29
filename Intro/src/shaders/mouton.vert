@@ -115,6 +115,7 @@ void main(void)
     } else if (time < 58.) { // Panel food!
         float time = time-55.;
         panelPos = vec3(-5.,0.,-8.);
+        sheepPos = vec3(INFINITE);
         
         eyeDir = vec3(.3,.0,1.);
         eyesSurprise = .2;

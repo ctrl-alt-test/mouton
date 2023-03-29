@@ -64,9 +64,8 @@ float star2d(in vec2 p, in float r, in float rf);
 // Distance field 
 // ---------------------------------------------
 vec2 map(vec3 p);
-float trace(vec3 ro, vec3 rd, vec2 nf);
-vec3 normal(vec3 p);
-float shadow( vec3 ro, vec3 rd, float mint, float tmax );
+//float trace(vec3 ro, vec3 rd, vec2 nf);
+float shadow( vec3 ro, vec3 rd);
 
 // Materials
 const float GROUND = 0.;
@@ -85,14 +84,6 @@ const float BLOOD = 12.;
 
 vec2 dmin(vec2 a, vec2 b) {
     return a.x<b.x ? a : b;
-}
-
-vec2 moda (vec2 p, float per)
-{
-    float a = atan(p.y,p.x);
-    float l = length(p);
-    a = mod(a-per/2.,per)-per/2.;
-    return vec2 (cos(a),sin(a))*l;
 }
 
 vec2 blood(vec3 p) {
@@ -138,7 +129,14 @@ vec2 flower(vec3 p) {
         vec2 dmat = vec2(pistil, PISTIL);
         
         vec3 pp = pr;
-        pp.xz = moda(pp.xz, PI*.2);
+        
+        //moda
+        const float per = PI*.2;
+        float a = atan(pp.z,pp.x);
+        float l = length(pp.xz);
+        a = mod(a-per/2.,per)-per/2.;
+        pp.xz = vec2 (cos(a),sin(a))*l;
+        
         float petals = ellipsoid(pp-vec3(0.5,.2+sin(pp.x*2.)*.2,0.), vec3(2.,.1+sin(pp.z*40.)*.02,.75)*.25);
         if (petals < dmat.x) {
             dmat = vec2(petals, PETAL);
@@ -484,7 +482,7 @@ float specular(vec3 v, vec3 l, float size)
 }
 
 // /!\ Not energy conservative!
-vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
+vec3 shade(vec3 ro, vec3 rd, vec3 p, float t,  vec3 n, vec2 uv) {
     vec2 dmat = map(p);
     
     
@@ -493,8 +491,8 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     float ao = fastAO(p, n, .15, 1.);
     ao *= fastAO(p, n, 1., .1)*.5;
     
-    float shad = shadow(p, sunDir, .08, 50.);
-    float fre = clamp(1.0+dot(rd,n), 0., 5.);
+    float shad = shadow(p, sunDir);
+    float fre = 1.0+dot(rd,n);
     
     vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.2,1.5));
     vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
@@ -676,7 +674,6 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
     vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
 
     // fog
-    float t = length(p-ro);
     col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
     col = clamp(col,0.,1.);
 
@@ -703,11 +700,216 @@ void main()
     vec3 ta = camTa;
     vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
         
-    // Trace
+    // Trace : intersection point + normal
     float t = fastTrace(ro,rd);
     vec3 p = ro + rd * t;
-    vec3 n = normal(p);
-    vec3 col = shade(ro, rd, p, n, v);
+    vec2 dmat = map(p);
+    vec2 eps = vec2(0.0001,0.0);
+    vec3 n = normalize(vec3(dmat.x - map(p - eps.xyy).x, dmat.x - map(p - eps.yxy).x, dmat.x - map(p - eps.yyx).x));
+    
+    
+    // ----------------------------------------------------------------
+    // Shade
+    // ----------------------------------------------------------------
+    float night = smoothstep(0.,.3, sunDir.y)+.1;
+    
+    float ao = fastAO(p, n, .15, 1.);
+    ao *= fastAO(p, n, 1., .1)*.5;
+    
+    float shad = shadow(p, sunDir);
+    float fre = 1.0+dot(rd,n);
+    
+    vec3 diff = vec3(1.,.8,.7) * max(dot(n,sunDir), 0.) * pow(vec3(shad), vec3(1.,1.2,1.5));
+    vec3 bnc = vec3(1.,.8,.7)*.1 * max(dot(n,-sunDir), 0.) * ao;
+    vec3 sss = vec3(.5) * mix(fastAO(p, rd, .3, .75), fastAO(p, sunDir, .3, .75), 0.5);
+    vec3 spe = vec3(1.) * max(dot(reflect(rd,n), sunDir),0.);
+    vec3 envm = vec3(0.);
+    
+    //sss = vec3(1.) * calcSSS(p,rd);
+    vec3 amb = vec3(.4,.45,.5)*1. * ao;
+    vec3 emi = vec3(0.);
+    
+    vec3 albedo = vec3(0.);
+    if(dmat.y == GROUND) {
+        albedo = vec3(3.);
+        sss *= 0.;
+        spe *= 0.;
+    } else if (dmat.y == COTON) {
+        albedo = vec3(.4);
+        sss *= fre*.5+.5;
+        emi = vec3(.35);
+        spe = pow(spe, vec3(4.))*fre*.25;
+    } else if (dmat.y == CLOGS) {
+        albedo = vec3(.025);
+        sss *= 0.;
+        spe = pow(spe, vec3(80.))*fre*10.;
+    } else if (dmat.y == EYE) {
+        sss *= .5;
+        vec3 dir = normalize(eyeDir + (noise(vec3(iTime,iTime*.5,iTime*1.5))*2.-1.)*.01);
+        
+        // compute eye space -> mat3(eyeDir, t, b)
+        vec3 t = cross(dir, vec3(0.,1.,0.));
+        vec3 b = cross(dir,t);
+        t = cross(b, dir);
+        
+        vec3 ne = n.z * dir + n.x * t + n.y * b;
+        
+        // parallax mapping
+        vec3 v = rd.z * eyeDir + rd.x * t + rd.y * b;
+        vec2 offset = v.xy / v.z * length(ne.xy) / length(ro-p) * .4;
+        ne.xy -= offset * smoothstep(0.01,.0, dot(ne,rd));
+        
+        const float i_irisSize = .3;
+        float pupilSize = .2 + eyesSurprise*.5;
+        
+        // polar coordinate
+        float er = length(ne.xy);
+        float theta = atan(ne.x, ne.y);
+        
+        // iris
+        vec3 c = mix(vec3(.5,.3,.1) , vec3(.0,.8,1), smoothstep(0.16,i_irisSize,er)*.3+cos(theta*15.)*.04);
+        float filaments = smoothstep(-.9,1.,noise(vec3(er*10.,theta*30.+cos(er*50.+noise(vec3(theta))*50.)*1.,0.)));
+        filaments += smoothstep(-.9,1.,noise(vec3(er*10.,theta*40.+cos(er*30.+noise(vec3(theta))*50.)*2.,0.)));
+        albedo = c * (filaments*.5+.5) * (smoothstep(i_irisSize,i_irisSize-.01, er)); // brown to green
+        albedo *= vec3(1.,.8,.7) * pow(max(0.,dot(normalize(vec3(3.,1.,-1.)), ne)),8.)*300.+.5; // retro reflection
+        float pupil = smoothstep(pupilSize,pupilSize+0.02, er);
+        albedo *= pupil; // pupil
+        albedo += pow(spe,vec3(800.))*3; // specular light
+        albedo = mix(albedo, vec3(.8), smoothstep(i_irisSize-0.01,i_irisSize, er)); // white eye
+        albedo = mix(c*.3, albedo, smoothstep(0.0,0.05, abs(er-i_irisSize-0.0)+0.01)); // black edge
+        
+        // fake envmap reflection
+        n = mix(normalize(n + (eyeDir + n)*4.), n, smoothstep(i_irisSize,i_irisSize+0.02, er));
+        {
+            vec3 v = reflect(rd, n);
+            vec3 l1 = normalize(vec3(1., 1.5, -1.));
+            vec3 l2 = vec3(-l1.x, l1.y*.5, l1.z);
+            float spot = 0.;
+            spot += specular(v, l1, 0.);
+            spot += specular(v, normalize(l1 + vec3(0.2, 0., 0.)), 2.);
+            spot += specular(v, normalize(l1 + vec3(0.2, 0., 0.2)), 4.);
+    
+            spot += specular(v, l2, 20.) * .1;
+            spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 80.) * .5;
+            spot /= 5.;
+    
+            envm = (mix(
+                mix(vec3(.3,.3,0.), vec3(.1), smoothstep(-.7, .2, v.y)),
+                vec3(0.3, 0.65, 1.), smoothstep(-.0, 1., v.y)) + spot * vec3(1., 0.9, .8)) * mix(.15, .2, pupil) *sqrt(fre)*2.5;
+        }
+        
+        // shadow on the edges of the eyes
+        map(p);
+        albedo *= smoothstep(0.,0.015, headDist)*.4+.6;
+        
+        // flower
+        float shape = abs(sin(theta * 5.)) - smoothstep(.15, 0.7, er)*4.;
+        shape = smoothstep(0.449, 0.45, shape);
+        vec3 flower = mix(vec3(0.), vec3(.75,0.5,1.)*.5, shape);
+        flower = mix(vec3(.7, .7, 0.), flower, smoothstep(.06, .1, er));
+        flower *= smoothstep(135.2, 135.6, iTime);
+        
+        albedo += flower;
+        
+        spe *= 0.;
+    } else if(dmat.y == METAL) {
+        albedo = vec3(.85,.95,1.);
+        sss *= 0.;
+        spe = pow(spe, vec3(8.))*fre*2.;
+    } else if(dmat.y == PANEL) {
+        vec3 p = p-panelWarningPos;
+        sss *= 0.;
+        spe = pow(spe, vec3(8.))*fre*20.;
+        
+        if (n.z > .5) {
+            float tri = triangle(p-vec3(0.,7.5,-5.), vec2(1.3,.2), .01);
+            albedo = vec3(1.5,0.,0.);
+            float symbol = smoothstep(0.13,0.1295, distance(p,vec3(0.,7.1,-4.9)));
+            symbol += smoothstep(0.005,0.,UnevenCapsule2d(p.xy-vec2(0.,7.34), .06,.14,1.));
+            albedo = mix(albedo, vec3(2.), smoothstep(0.005,.0, tri));
+            albedo = mix(albedo, vec3(0.), symbol);
+        } else {
+            albedo = vec3(.85,.95,1.);
+        }
+    } else if(dmat.y == PANEL_FOOD) {
+        vec3 p = p-panelPos;
+        sss *= 0.;
+        spe = pow(spe, vec3(8.))*fre*10.;
+        if (n.z > .5) {
+            albedo = vec3(0.,0.,1.5);
+            p.y -= 7.4;
+            float squ = box(p-vec3(0.,.1,-5.), vec3(0.8,.8, 1));
+            float symbol = 0.;
+            p.xy = rot(.8) * p.xy;
+            const float x = .04;
+            symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(-x,-.6), .1,.05,1.));
+            symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(-x,.5), .16,.135,0.15));
+            symbol *= smoothstep(0.,0.01,UnevenCapsule2d(p.xy-vec2(-x-.08,.56), .001,.02,0.2));
+            symbol *= smoothstep(0.,0.01,UnevenCapsule2d(p.xy-vec2(-x+.04,.56), .001,.02,0.2));
+            p.xy = rot(-1.6) * p.xy;
+            symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(x,-.6), .1,.05,1.));
+            symbol += smoothstep(0.01,0.,UnevenCapsule2d(p.xy-vec2(x,.5), .16,.1,0.15));
+            albedo = mix(albedo, vec3(2.), smoothstep(0.01,.0, squ));
+            albedo = mix(albedo, vec3(0.), symbol);
+        } else {
+            albedo = vec3(1.);
+        }
+    } else if (dmat.y == PISTIL) {
+        vec3 pr = p - flowerPos;
+        pr.x += cos(3.1*.25+iTime)*3.1*.2;
+        pr.y -= 2.8;
+        pr.zy = rot(.75) * pr.zy;
+        albedo = mix(vec3(2.,.75,.0), vec3(2.,2.,.0), smoothstep(0.,.45, length(pr-vec3(0.,.3,0.))))*1.8;
+        sss = vec3(0.01);
+        spe *= 0.;
+    } else if (dmat.y == TIGE) {
+        albedo = vec3(0.,.05,.0);
+        spe *= fre;
+    } else if (dmat.y == PETAL) {
+        vec3 pr = p - flowerPos;
+        pr.x += cos(3.1*.25+iTime)*3.1*.2;
+        pr.y -= 2.8;
+        pr.zy = rot(.75) * pr.zy;
+        albedo = mix(vec3(1.,1.,1.)+.5, vec3(.75,0.5,1.), smoothstep(0.5,1.1, length(pr-vec3(0.,.3,0.))))*2.;
+       // albedo = vec3(1.,1.,1.)*3.;
+        sss *= 0.;
+        spe = pow(spe, vec3(4.))*fre*1.0;
+    } else if(dmat.y == BLACK_METAL) {
+        albedo = vec3(1.);
+        diff *= vec3(.1)*fre;
+        amb *= vec3(.1)*fre;
+        bnc *= 0.;
+        sss *= 0.;
+        spe = pow(spe, vec3(100.))*fre*2.;
+    }  else if(dmat.y == BLOOD) {
+        albedo = vec3(1.,.01,.01)*.3;
+        float fre2 = fre*fre;
+        diff *= vec3(3.);
+        amb *= vec3(2.)*fre2;
+        sss *= 0.;
+        spe = vec3(1.,.3,.3) * pow(spe, vec3(500.))*5.;
+    } 
+    else if (dmat.y == SKIN) {
+        albedo = vec3(1.,.7,.5)*1.;
+        amb *= vec3(1.,.75,.75);
+        sss = pow(sss, vec3(.5,2.5,5.0)+2.)*2.;// * fre;// * pow(fre, 1.);
+        spe = pow(spe, vec3(4.))*fre*.02;
+    }
+    
+    vec3 col =  (albedo * (amb*1. + diff*.5 + bnc*2. + sss*2. ) + envm + spe*shad + emi) *  night;//* (saturate(sunDir.y)*.95+.05);
+
+    // fog
+    col = mix(col, skyColor(rd,uv, night), smoothstep(90.,100.,t));
+    col = clamp(col,0.,1.);
+
+    // Excited background
+    if(dmat.y == GROUND) {
+        float r = length(uv)*.5;
+        float theta = cos(atan(uv.x, uv.y)*15.-iTime*3.-r*30.*excited.y);
+        vec3 c = mix(vec3(1.,0.5,00), vec3(.8,0.5,1.), (cos(r*5.+iTime*5.)*.5+.5)*excited.y);
+        //vec3 c = vec3(1.,0.5,00);
+        col = mix(col,  mix(c, vec3(1.,1.,1.), smoothstep(-r, r, theta)), excited.x);
+    }
         
     // Excited stars
     vec2 p2 = vec2(abs(v.x*5.-.3)-1.5, v.y*5.-1.4);
@@ -718,25 +920,19 @@ void main()
     vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p2, size*.5, .5)))*1.3;
     col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited.x);
 
-    // gamma correction
-    col = pow(col, vec3(1./2.2));
-
 
     // ----------------------------------------------------------------
     // Post processing pass
     // ----------------------------------------------------------------
-    // color grading
-    col = pow(col, vec3(1.0,1.05,1.1));
-
-    // fade in
-    col *= smoothstep(0.,10., iTime);
-    
     const float endTime = 156.;
-
+    // gamma correction & color grading
+    col = pow(pow(col, vec3(1./2.2)), vec3(1.0,1.05,1.1));
+    
     // Circle to black
     float circle = length(gl_FragCoord.xy/iResolution.xx - vec2(.5,.3));
     float tt = max(.137, smoothstep(endTime+1., endTime, iTime));
     col *= smoothstep(tt, tt-.005, circle);
+ 
     
     // Looney tunes
     float f = circle;
@@ -746,12 +942,11 @@ void main()
     vec3 col2 = mix(vec3(1.,.6,.0), vec3(1.,.0,0.), pow(f,1.));
     col = mix(col, col2, alpha);
     
-    // vignetting
-    col /= (1.+pow(length(uv*2.-1.),4.)*.04);
+    // fade in & out + circle to black
+    col *= smoothstep(0.,10., iTime) * smoothstep(162., 161., iTime);
     
-    // Fade out
-    col *= smoothstep(endTime+6., endTime+5., iTime);
-    fragColor = vec4(col,1.);
+    // vignetting
+    fragColor = vec4(col / (1.+pow(length(uv*2.-1.),4.)*.04),1.);
 }
 
 
@@ -761,6 +956,7 @@ void main()
 // ---------------------------------------------
 // Raytracing toolbox
 // ---------------------------------------------
+/*
 float trace(vec3 ro, vec3 rd, vec2 nf) {
     float t = nf.x;
     for(int i=0; i<128; i++) {
@@ -772,30 +968,20 @@ float trace(vec3 ro, vec3 rd, vec2 nf) {
     
     return t;
 }
-vec3 normal(vec3 p) {
-    vec2 eps = vec2(0.0001,0.0);
-    float d = map(p).x;
-    vec3 n;
-    n.x = d - map(p - eps.xyy).x;
-    n.y = d - map(p - eps.yxy).x;
-    n.z = d - map(p - eps.yyx).x;
-    
-    return normalize(n);
-}
+*/
 
 // https://www.shadertoy.com/view/lsKcDD
-float shadow( vec3 ro, vec3 rd, float mint, float tmax )
+float shadow( vec3 ro, vec3 rd)
 {
     float res = 1.0;
-    float t = mint;
-    
+    float t = 0.08;
     for( int i=0; i<64; i++ )
     {
         float h = map( ro + rd*t ).x;
         res = min( res, 30.0*h/t );
         t += h;
         
-        if( res<0.0001 || t>tmax ) break;
+        if( res<0.0001 || t>50. ) break;
         
     }
     return clamp( res, 0.0, 1.0 );
