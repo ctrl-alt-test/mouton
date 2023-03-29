@@ -110,9 +110,7 @@ vec2 anvil(vec3 p) {
         d2 = max(d2, abs(p.x)-.5);
         d2 = max(d2, p.y-3.5);
         d = min(d, d2);
-        vec2 dmat = vec2(d-.1, BLACK_METAL);
-        
-        return dmat;
+        return vec2(d-.1, BLACK_METAL);
     }
     return vec2(INFINITE,GROUND);
 }
@@ -162,8 +160,7 @@ vec2 panelFood(vec3 p) {
         
         
         vec2 dmat = vec2(tube, METAL);
-        dmat = dmin(dmat, vec2(pan,PANEL_FOOD));
-        return dmat;
+        return dmin(dmat, vec2(pan,PANEL_FOOD));
     }else {
         return vec2(INFINITE, GROUND);
     }
@@ -181,8 +178,7 @@ vec2 panelWarning(vec3 p) {
         
         
         vec2 dmat = vec2(tube, METAL);
-        dmat = dmin(dmat, vec2(pan,PANEL));
-        return dmat;
+        return dmin(dmat, vec2(pan,PANEL));
     } else {
         return vec2(INFINITE, GROUND);
     }
@@ -494,8 +490,7 @@ void main()
     // ----------------------------------------------------------------
     float night = smoothstep(0.,.3, sunDir.y)+.1;
     
-    float ao = fastAO(p, n, .15, 1.);
-    ao *= fastAO(p, n, 1., .1)*.5;
+    float ao = fastAO(p, n, .15, 1.) * fastAO(p, n, 1., .1)*.5;
     
     float shad = shadow(p, sunDir);
     float fre = 1.0+dot(rd,n);
@@ -549,11 +544,11 @@ void main()
         
         // iris
         vec3 c = mix(vec3(.5,.3,.1) , vec3(.0,.8,1), smoothstep(0.16,i_irisSize,er)*.3+cos(theta*15.)*.04);
-        float filaments = smoothstep(-.9,1.,noise(vec3(er*10.,theta*30.+cos(er*50.+noise(vec3(theta))*50.)*1.,0.)));
-        filaments += smoothstep(-.9,1.,noise(vec3(er*10.,theta*40.+cos(er*30.+noise(vec3(theta))*50.)*2.,0.)));
+        float filaments = smoothstep(-.9,1.,noise(vec3(er*10.,theta*30.+cos(er*50.+noise(vec3(theta))*50.)*1.,0.)))
+            + smoothstep(-.9,1.,noise(vec3(er*10.,theta*40.+cos(er*30.+noise(vec3(theta))*50.)*2.,0.)));
+        float pupil = smoothstep(pupilSize,pupilSize+0.02, er);
         albedo = c * (filaments*.5+.5) * (smoothstep(i_irisSize,i_irisSize-.01, er)); // brown to green
         albedo *= vec3(1.,.8,.7) * pow(max(0.,dot(normalize(vec3(3.,1.,-1.)), ne)),8.)*300.+.5; // retro reflection
-        float pupil = smoothstep(pupilSize,pupilSize+0.02, er);
         albedo *= pupil; // pupil
         albedo += pow(spe,vec3(800.))*3; // specular light
         albedo = mix(albedo, vec3(.8), smoothstep(i_irisSize-0.01,i_irisSize, er)); // white eye
@@ -691,8 +686,8 @@ void main()
     // Excited stars
     vec2 p2 = vec2(abs(v.x*5.-.3)-1.5, v.y*5.-1.4);
     p2 = rot(iTime*5.) * p2;
-    float size = 1.4+0.2*sin(iTime*20.);
-    size *= smoothstep(0.5,1.,excited.x);
+    float size = (1.4+0.2*sin(iTime*20.))
+        * smoothstep(0.5,1.,excited.x);
     float star = star2d(p2, size, .5);
     vec3 starColor = mix(vec3(1.,.6,0.), vec3(1.,.2,0.), smoothstep(-.1,.6, star2d(p2, size*.5, .5)))*1.3;
     col = mix(col, starColor, smoothstep(0.,-0.01, star) * excited.x);
@@ -712,12 +707,11 @@ void main()
  
     
     // Looney tunes
-    float f = circle;
-    float alpha = smoothstep(0.135, .136, f) * smoothstep(endTime+1., endTime+2., iTime);
-    f = fract(23. * pow(f, .25));
+    float i_alpha = smoothstep(0.135, .136, circle) * smoothstep(endTime+1., endTime+2., iTime);
+    float f = fract(23. * pow(circle, .25));
     f -= smoothstep(0.95, 0.99, f);
-    vec3 col2 = mix(vec3(1.,.6,.0), vec3(1.,.0,0.), pow(f,1.));
-    col = mix(col, col2, alpha);
+    vec3 i_col2 = mix(vec3(1.,.6,.0), vec3(1.,.0,0.), pow(f,1.));
+    col = mix(col, i_col2, i_alpha);
     
     // fade in & out + circle to black
     col *= smoothstep(0.,10., iTime) * smoothstep(162., 161., iTime);
