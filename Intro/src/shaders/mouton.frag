@@ -466,7 +466,7 @@ float specular(vec3 v, vec3 l, float size)
     float spe = max(dot(v, normalize(l + v)), 0.);
     float a = 2000./size;
     float b = 3./size;
-    return (pow(spe, a)*(a+2.) + pow(spe, b)*(b+2.)*2.)*0.04;
+    return (pow(spe, a)*(a+2.) + pow(spe, b)*(b+2.)*2.)*0.008;
 }
 
 
@@ -565,13 +565,12 @@ void main()
             vec3 v = reflect(rd, n);
             vec3 l1 = normalize(vec3(1., 1.5, -1.));
             vec3 l2 = vec3(-l1.x, l1.y*.5, l1.z);
-            float spot = 0.;
-            spot += specular(v, l1, .1);
-            spot += specular(v, l2, 2.) * .1;
-            spot += specular(v, normalize(l1 + vec3(0.2, 0., 0.)), .3);
-            spot += specular(v, normalize(l1 + vec3(0.2, 0., 0.2)), .5);
-            spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 8.) * .5;
-            spot /= 5.;
+            float spot =
+                + specular(v, l1, .1)
+                + specular(v, l2, 2.) * .1
+                + specular(v, normalize(l1 + vec3(0.2, 0., 0.)), .3)
+                + specular(v, normalize(l1 + vec3(0.2, 0., 0.2)), .5)
+                + specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 8.) * .5;
     
             envm = (mix(
                 mix(vec3(.3,.3,0.), vec3(.1), smoothstep(-.7, .2, v.y)),
