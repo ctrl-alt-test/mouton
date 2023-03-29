@@ -338,8 +338,9 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
     vec3 rnd = hash3(vec3(abs(ip),abs(ip.x)));
     float s = rnd.z*.06;
 
-    return  vec3(1., .9, .1) * moon*smoothstep(.5,-1., sunDir.y) + smoothstep(s,s*.01, length(fp+(rnd.xy-.5)) ) * (1.-moonCircle) +  exp(-length(uv-moonPos)*2.)*.1 *pow(night,2.);
-    
+    return  vec3(1., .9, .1) * moon*smoothstep(.5,-1., sunDir.y)
+        + smoothstep(s,s*.01, length(fp+(rnd.xy-.5)) ) * (1.-moonCircle)
+        + exp(-length(uv-moonPos)*2.)*.1 + pow(night,2.);
 }
 
 float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
