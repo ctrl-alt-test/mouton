@@ -477,34 +477,12 @@ float fastTrace(vec3 ro, vec3 rd) {
     return result;
 }
 
-float blinnphong(float vdoth, float n)
-{
-    return pow(vdoth, n) * (n + 2.) / (8. * PI);
-}
-
 float specular(vec3 v, vec3 l, float size)
 {
-    vec3 h = normalize(l + v);
-    float vdoth = clamp(dot(v, h), 0., 1.);
-    return
-        blinnphong(vdoth, 30./(1.+size)) * 2. +
-        blinnphong(vdoth, 20000./(1.+size));
-}
-
-vec3 envmap(vec3 v, vec3 l, vec3 l2) {
-    float spot = 0.;
-    spot += specular(v, normalize(l + vec3(0., 0., 0.)), 0.);
-    spot += specular(v, normalize(l + vec3(0.2, 0., 0.)), 2.);
-    spot += specular(v, normalize(l + vec3(0.2, 0., 0.2)), 4.);
-    spot += specular(v, l2, 20.) * .1;
-    spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 80.) * .5;
-    spot /= 5.;
-    
-    vec3 color = mix(
-        mix(vec3(.3,.3,0.), vec3(.1), smoothstep(-.7, .2, v.y)),
-        vec3(0.3, 0.65, 1.), smoothstep(-.0, 1., v.y));
-    color += spot * vec3(1., 0.9, .8);
-    return color;
+    float spe = max(dot(v, normalize(l + v)), 0.);
+    float a = 20000./(1.+size);
+    float b = 30./(1.+size);
+    return (pow(spe, a)*(a+2.) + pow(spe, b)*(b+2.)*2.)*0.041;
 }
 
 // /!\ Not energy conservative!
@@ -580,10 +558,24 @@ vec3 shade(vec3 ro, vec3 rd, vec3 p, vec3 n, vec2 uv) {
         albedo = mix(c*.3, albedo, smoothstep(0.0,0.05, abs(er-i_irisSize-0.0)+0.01)); // black edge
         
         // fake envmap reflection
-        vec3 light1 = normalize(vec3(1., 1.5, -1.));
-        vec3 light2 = vec3(-light1.x, light1.y*.5, light1.z);
         n = mix(normalize(n + (eyeDir + n)*4.), n, smoothstep(i_irisSize,i_irisSize+0.02, er));
-        envm = envmap(reflect(rd, n), light1, light2) * mix(.15, .2, pupil) *sqrt(fre)*2.5;
+        {
+            vec3 v = reflect(rd, n);
+            vec3 l1 = normalize(vec3(1., 1.5, -1.));
+            vec3 l2 = vec3(-l1.x, l1.y*.5, l1.z);
+            float spot = 0.;
+            spot += specular(v, l1, 0.);
+            spot += specular(v, normalize(l1 + vec3(0.2, 0., 0.)), 2.);
+            spot += specular(v, normalize(l1 + vec3(0.2, 0., 0.2)), 4.);
+    
+            spot += specular(v, l2, 20.) * .1;
+            spot += specular(v, normalize(l2 + vec3(0.1, 0., 0.2)), 80.) * .5;
+            spot /= 5.;
+    
+            envm = (mix(
+                mix(vec3(.3,.3,0.), vec3(.1), smoothstep(-.7, .2, v.y)),
+                vec3(0.3, 0.65, 1.), smoothstep(-.0, 1., v.y)) + spot * vec3(1., 0.9, .8)) * mix(.15, .2, pupil) *sqrt(fre)*2.5;
+        }
         
         // shadow on the edges of the eyes
         map(p);
