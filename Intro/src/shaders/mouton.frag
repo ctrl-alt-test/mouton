@@ -51,7 +51,6 @@ mat2 rot(float v);
 // ---------------------------------------------
 float box( vec3 p, vec3 b );
 float cappedCone( vec3 p, float h, float r1, float r2 );
-float cappedTorus(in vec3 p, in vec2 sc, in float ra, in float rb);
 float capsule( vec3 p, vec3 a, vec3 b, float r );
 float torus( vec3 p, vec2 t );
 float ellipsoid( vec3 p, vec3 r);
@@ -893,13 +892,6 @@ float cappedCone( vec3 p, float h, float r1, float r2 )
   float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
   return s*sqrt( min(dot(ca,ca),dot(cb,cb)) );
 }
-float cappedTorus(in vec3 p, in vec2 sc, in float ra, in float rb)
-{
-  p.x = abs(p.x);
-  float k = (sc.y*p.x>sc.x*p.y) ? dot(p.xy,sc) : length(p.xy);
-  return sqrt( dot(p,p) + ra*ra - 2.0*ra*k ) - rb;
-}
-
 float capsule( vec3 p, vec3 a, vec3 b, float r )
 {
   vec3 pa = p - a, ba = b - a;
