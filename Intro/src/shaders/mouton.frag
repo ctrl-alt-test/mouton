@@ -38,7 +38,6 @@ uniform float iTime;
 const float PI = acos(-1.);
 const float INFINITE = 9e7;
 
-float hash1( vec2 p );
 vec3 hash3(vec3 p);
 float noise( in vec3 x );
 
@@ -208,7 +207,7 @@ vec2 sheep(vec3 p) {
     float body = length(p*vec3(1.,1.,.825)-vec3(0.,1.5,2.55)-bodyMove)-2.;
     
     if (body < 3.) {
-        float n = (pow(noise((p-bodyMove-vec3(0.05,.0,0.))*2.)*.5+.5, .75)*2.-1.);
+        float n = (pow(noise((p-bodyMove+vec3(.05,0.,0.))*2.)*.5+.5, .75)*2.-1.);
         body = body + .05 - n*.2;
 
 
@@ -809,7 +808,7 @@ float shadow( vec3 ro, vec3 rd, float mint, float tmax )
 // Hash & Noise
 // ---------------------------------------------
 vec3 hash3(vec3 p) {
-    uvec3 x = uvec3((p)*100000.);
+    uvec3 x = uvec3((p+100.)*10000.);
     const uint k = 1103515245U; 
     x = ((x>>8U)^x.yzx)*k;
     x = ((x>>8U)^x.yzx)*k;
@@ -818,41 +817,19 @@ vec3 hash3(vec3 p) {
     return vec3(x)*(1.0/float(-1U));
 }
 
-float hash1( float n )
-{
-    return fract( n*17.0*fract( n*0.3183099 ) );
-}
+float noise(vec3 x) {
 
-float noise( in vec3 x )
-{
-    vec3 p = floor(x);
-    vec3 w = fract(x);
-   
-    vec3 u = w*w*w*(w*(w*6.0-15.0)+10.0);
-    
-
-
-    float n = p.x + 317.0*p.y + 157.0*p.z;
-    
-    float a = hash1(n+0.0);
-    float b = hash1(n+1.0);
-    float c = hash1(n+317.0);
-    float d = hash1(n+318.0);
-    float e = hash1(n+157.0);
-    float f = hash1(n+158.0);
-    float g = hash1(n+474.0);
-    float h = hash1(n+475.0);
-
-    float k0 =   a;
-    float k1 =   b - a;
-    float k2 =   c - a;
-    float k3 =   e - a;
-    float k4 =   a - b - c + d;
-    float k5 =   a - c - e + g;
-    float k6 =   a - b - e + f;
-    float k7 = - a + b + c - d + e - f - g + h;
-
-    return -1.0+2.0*(k0 + k1*u.x + k2*u.y + k3*u.z + k4*u.x*u.y + k5*u.y*u.z + k6*u.z*u.x + k7*u.x*u.y*u.z);
+    vec3 i = floor(x);
+    vec3 f = fract(x);
+    f = f*f*f*(f*(f*6.0-15.0)+10.0);
+    return mix(mix(mix( hash3(i+vec3(0,0,0)).x, 
+                        hash3(i+vec3(1,0,0)).x,f.x),
+                   mix( hash3(i+vec3(0,1,0)).x, 
+                        hash3(i+vec3(1,1,0)).x,f.x),f.y),
+               mix(mix( hash3(i+vec3(0,0,1)).x, 
+                        hash3(i+vec3(1,0,1)).x,f.x),
+                   mix( hash3(i+vec3(0,1,1)).x, 
+                        hash3(i+vec3(1,1,1)).x,f.x),f.y),f.z)*2.-1.;
 }
 
 
