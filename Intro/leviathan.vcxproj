@@ -267,7 +267,7 @@
     </ProjectReference>
     <PreBuildEvent>
       <Message>Minify user-supplied shader files.</Message>
-      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -450,7 +450,7 @@
     </ProjectReference>
     <PreBuildEvent>
       <Message>Minify user-supplied shader files.</Message>
-      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Snapshot|Win32'">
@@ -549,7 +549,7 @@
     </ProjectReference>
     <PreBuildEvent>
       <Message>Minify user-supplied shader files.</Message>
-      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag src\shaders\postprocess.frag</Command>
+      <Command>shader_minifier.exe -v -o src\shaders\shaders.inl src\shaders\mouton.frag src\shaders\mouton.vert src\shaders\fxaa.frag</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -558,7 +558,21 @@
     <ClInclude Include="src\4klang.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\editor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Heavy Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Snapshot|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\song.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Heavy Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Snapshot|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\fxaa.frag" />

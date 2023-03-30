@@ -2,22 +2,21 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\song.cpp" />
+    <ClCompile Include="src\editor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\debug.h" />
     <ClInclude Include="src\definitions.h" />
     <ClInclude Include="src\glext.h">
       <Filter>ext</Filter>
     </ClInclude>
+    <ClInclude Include="src\4klang.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\mouton.frag">
       <Filter>shaders</Filter>
     </None>
     <None Include="src\shaders\mouton.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="src\shaders\postprocess.frag">
       <Filter>shaders</Filter>
     </None>
     <None Include="src\shaders\fxaa.frag">

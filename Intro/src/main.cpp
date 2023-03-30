@@ -17,10 +17,12 @@
 #include "definitions.h"
 
 // Global defines
-#define SOUND_ON 
+#define SOUND_ON
 #define USE_FXAA
 #define USE_CREATE_SHADER_PROGRAM // Save almost 40 bytes, require OpenGL 4.1 (Anat : doesn't work on my emulated windows)
 
+// Relative path or absolute path to a wav file. Within VS, current path is `Intro/out`.
+#define TRACK_AS_WAV_FILE L"..\\sheep.wav"
 
 #include "glext.h"
 #pragma data_seg(".shader")
@@ -73,8 +75,14 @@ MMTIME MMTime =
 };
 #endif
 
+#ifndef EDITOR_CONTROLS
 #pragma code_seg(".main")
 void entrypoint(void)
+#else
+#include "editor.h"
+#include "song.h"
+int __cdecl main(int argc, char* argv[])
+#endif
 {
 	// initialize window
 	#if FULLSCREEN
@@ -119,6 +127,7 @@ void entrypoint(void)
 #endif
 
 	// init sound
+#ifndef EDITOR_CONTROLS
 #ifdef SOUND_ON
 	#if 1 // 4 more bytes
 		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)_4klang_render, lpSoundBuffer, 0, 0);
@@ -131,6 +140,15 @@ void entrypoint(void)
 #else
 	long startTime = timeGetTime();
 #endif
+#else
+	Leviathan::Editor editor = Leviathan::Editor();
+	// editor.updateShaders(&pidMain, &pidPost, true);
+
+	Leviathan::Song track(TRACK_AS_WAV_FILE);
+
+	track.play();
+	double position = 0.0;
+#endif
 
 	// because all render passes need exactly the same input, we can do it once for all
 #ifdef USE_FXAA
@@ -142,12 +160,18 @@ void entrypoint(void)
 	// main loop
 	do
 	{
+#ifdef EDITOR_CONTROLS
+		editor.beginFrame(timeGetTime());
+		position = track.getTime();
+		float time = (float)position;
+#else
 #ifdef SOUND_ON
 		waveOutGetPosition(hWaveOut, &MMTime, sizeof(MMTIME));
 		float time = ((float)MMTime.u.sample) / 44100.0f;
 #else
 		long currentTime = timeGetTime();
 		float time = (float)(currentTime - startTime) * 0.001f;
+#endif
 #endif
 
 		#if !(DESPERATE)
@@ -174,6 +198,14 @@ void entrypoint(void)
 		glRects(-1, -1, 1, 1);
 #endif
 		SwapBuffers(hDC);
+
+		// handle functionality of the editor
+#ifdef EDITOR_CONTROLS
+		editor.endFrame(timeGetTime());
+		position = editor.handleEvents(&track, position);
+		editor.printFrameStatistics();
+		// editor.updateShaders(&pidMain, &pidPost);
+#endif
 
 #ifdef SOUND_ON
 	} while(MMTime.u.sample < MAX_SAMPLES && !GetAsyncKeyState(VK_ESCAPE));
