@@ -2,8 +2,6 @@
 #include "song.h"
 
 #include "stdio.h"
-#include "windows.h"
-#include "GL/gl.h"
 #include "glext.h"
 
 using namespace Leviathan;
@@ -82,7 +80,7 @@ double Editor::handleEvents(Leviathan::Song* track, double position)
 	return position;
 }
 
-void Editor::updateShaders(int* mainShaderPID, int* postShaderPID, bool force_update)
+void Editor::updateShaders(int* mainShaderPID, bool force_update)
 {
 	if (shaderUpdatePending || force_update)
 	{
@@ -93,13 +91,12 @@ void Editor::updateShaders(int* mainShaderPID, int* postShaderPID, bool force_up
 			printf("Refreshing shaders...                                                   \n");
 
 			Sleep(100);
-			int newPID = reloadShaderSource("../src/shaders/fragment.frag");
-			if (newPID > 0)
+			int newPID = reloadShaderSource("src/shaders/mouton.vert", "src/shaders/mouton.frag");
+			if (newPID > 0) {
+				int oldPID = *mainShaderPID;
 				*mainShaderPID = newPID;
-
-			newPID = reloadShaderSource("../src/shaders/post.frag");
-			if (newPID > 0)
-				*postShaderPID = newPID;
+				((PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader"))(oldPID);
+			}
 		}
 
 		previousUpdateTime = timeGetTime();
@@ -107,79 +104,70 @@ void Editor::updateShaders(int* mainShaderPID, int* postShaderPID, bool force_up
 	}
 }
 
-int Editor::reloadShaderSource(const char* filename)
+int Editor::reloadShaderSource(const char* filenameVS, const char* filenamePS)
+{
+	char* sourceVS = textFileRead(filenameVS);
+	char* sourcePS = textFileRead(filenamePS);
+	if (!sourceVS || !sourcePS) return -1;
+
+	int shaderVS = compileShader(sourceVS, GL_VERTEX_SHADER);
+	int shaderPS = compileShader(sourcePS, GL_FRAGMENT_SHADER);
+	if (!shaderVS || !shaderPS) return -1;
+
+	int shaderMain = ((PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram"))();
+	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderMain, shaderVS);
+	((PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader"))(shaderMain, shaderPS);
+	((PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram"))(shaderMain);
+
+	((PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader"))(shaderVS);
+	((PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader"))(shaderPS);
+
+	return shaderMain;
+}
+
+
+int Editor::compileShader(char* source, GLenum shaderType) {
+	int pid = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(shaderType);
+	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(pid, 1, &source, 0);
+	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(pid);
+
+	int result = 0;
+	((PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv"))(pid, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE)
+	{
+		// display compile log on failure
+		static char errorBuffer[shaderErrorBufferLength];
+		((PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog"))(pid, shaderErrorBufferLength - 1, NULL, static_cast<char*>(errorBuffer));
+
+#if USE_MESSAGEBOX
+		MessageBox(NULL, errorBuffer, "", 0x00000000L);
+#endif
+		printf("Compilation errors in %s\n", errorBuffer);
+		return 0;
+	}
+	return pid;
+}
+char* Editor::textFileRead(const char* filename)
 {
 	long inputSize = 0;
 	// we're of course opening a text file, but should be opened in binary ('b')
 	// longer shaders are known to cause problems by producing garbage input when read
 	FILE* file = fopen(filename, "rb");
 
-	if (file)
-	{
-		fseek(file, 0, SEEK_END);
-		inputSize = ftell(file);
-		rewind(file);
-
-		char* shaderString = static_cast<char*>(calloc(inputSize + 1, sizeof(char)));
-		fread(shaderString, sizeof(char), inputSize, file);
-		fclose(file);
-
-		// just to be sure...
-		shaderString[inputSize] = '\0';
-
-		if (!compileAndDebugShader(shaderString, filename, false))
-		{
-			free(shaderString);
-			// return an invalid PID value if compilation fails
-			return -1;
-		}
-		
-		int pid = ((PFNGLCREATESHADERPROGRAMVPROC)wglGetProcAddress("glCreateShaderProgramv"))(GL_FRAGMENT_SHADER, 1, &shaderString);
-		free(shaderString);
-
-		printf("Loaded shader from \"%s\"\n", filename);
-		return pid;
-	}
-	else
-	{
+	if (!file) {
 		printf("Input shader file at \"%s\" not found, shader not reloaded\n", filename);
-		return -1;
+		return NULL;
 	}
-}
 
-bool Editor::compileAndDebugShader(const char* shader, const char* filename, bool kill_on_failure)
-{
-	// try and compile the shader 
-	int result = 0;
-	const int debugid = ((PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader"))(GL_FRAGMENT_SHADER);
-	((PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource"))(debugid, 1, &shader, 0);
-	((PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader"))(debugid);
+	fseek(file, 0, SEEK_END);
+	inputSize = ftell(file);
+	rewind(file);
 
-	// get compile result
-	((PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv"))(debugid, GL_COMPILE_STATUS, &result);
-	if (result == GL_FALSE)
-	{
-		// display compile log on failure
-		static char errorBuffer[shaderErrorBufferLength];
-		((PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog"))(debugid, shaderErrorBufferLength-1, NULL, static_cast<char*>(errorBuffer));
-		
-		#if USE_MESSAGEBOX
-			MessageBox(NULL, errorBuffer, "", 0x00000000L);
-		#endif
-		printf("Compilation errors in %s:\n\n %s\n", filename, errorBuffer);
+	char* shaderString = static_cast<char*>(calloc(inputSize + 1, sizeof(char)));
+	fread(shaderString, sizeof(char), inputSize, file);
+	fclose(file);
 
-		if (kill_on_failure)
-		{
-			ExitProcess(0);
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		((PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader"))(debugid);
-		return true;
-	}
+	shaderString[inputSize] = '\0';
+
+	return shaderString;
 }

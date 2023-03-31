@@ -21,8 +21,8 @@
 #define USE_FXAA
 #define USE_CREATE_SHADER_PROGRAM // Save almost 40 bytes, require OpenGL 4.1 (Anat : doesn't work on my emulated windows)
 
-// Relative path or absolute path to a wav file. Within VS, current path is `Intro/out`.
-#define TRACK_AS_WAV_FILE L"..\\sheep.wav"
+// Relative path or absolute path to a wav file. Within VS, current path is `Intro`.
+#define TRACK_AS_WAV_FILE L"sheep.wav"
 
 #include "glext.h"
 #pragma data_seg(".shader")
@@ -142,7 +142,7 @@ int __cdecl main(int argc, char* argv[])
 #endif
 #else
 	Leviathan::Editor editor = Leviathan::Editor();
-	// editor.updateShaders(&pidMain, &pidPost, true);
+	editor.updateShaders(&shaderMain, true);
 
 	Leviathan::Song track(TRACK_AS_WAV_FILE);
 
@@ -204,7 +204,7 @@ int __cdecl main(int argc, char* argv[])
 		editor.endFrame(timeGetTime());
 		position = editor.handleEvents(&track, position);
 		editor.printFrameStatistics();
-		// editor.updateShaders(&pidMain, &pidPost);
+		editor.updateShaders(&shaderMain, false);
 #endif
 
 #ifdef SOUND_ON

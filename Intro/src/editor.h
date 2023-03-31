@@ -1,3 +1,6 @@
+
+#include "windows.h"
+#include "GL/gl.h"
 namespace Leviathan
 {
 	// forward declaration
@@ -20,12 +23,12 @@ namespace Leviathan
 
 		double handleEvents(Song* track, double position);
 
-		void updateShaders(int* mainShaderPID, int* postShaderPID, bool force_update = false);
+		void updateShaders(int* mainShaderPID, bool force_update = false);
 
 	private:
-		int reloadShaderSource(const char* filename);
-
-		bool compileAndDebugShader(const char* shader, const char* filename, bool kill_on_failure = true);
+		int reloadShaderSource(const char* filenameVS, const char* filenamePS);
+		char* textFileRead(const char* filename);
+		int compileShader(char *source, GLenum shaderType);
 
 		enum PlayState {Playing, Paused};
 		PlayState state;
