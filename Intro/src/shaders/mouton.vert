@@ -80,7 +80,7 @@ void main(void)
         
         camPos = vec3(5.+time*.5, 2., 0.+time*.5);
         camTa = vec3(0., 2., 0.);
-    } else if( time < 45.) { // Day 'n night walking
+    } else if( time < 44.) { // Day 'n night walking
         float time = time-29.;
         animationAmp = vec3(1.,.2, .25); // Slow walk
         animationSpeed = vec3(1.,1.,2.);
@@ -95,8 +95,8 @@ void main(void)
         camPos = vec3(22., 2., time*0.6-10.);
         camTa = vec3(0., 2., time*0.6-10.);
     } else if (time < 52.) { // Eye focus
-        float time = time-45.;
-        float t = smoothstep(2.,2.5,time);
+        float time = time-44.;
+        float t = smoothstep(5.,5.5,time);
         
         headRot.y = mix(.25, 0., t);
         
@@ -104,7 +104,7 @@ void main(void)
         animationSpeed = vec3(1.,1.,.5);
         
         eyeDir = vec3(t*.3,.3-t*.3,1.);
-        eyesSurprise = smoothstep(4.6,4.8,time)*.2;
+        eyesSurprise = smoothstep(7.4,7.6,time)*.2;
         
         camFocal = 4.;
         camPos = vec3(0.,3., -4.);
@@ -135,7 +135,7 @@ void main(void)
         eyeDir = vec3(.3,0.,1.);
         camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), excited.x);
         camTa = vec3(0., 3., 0.);
-        camFocal = mix(4., 3., excited.x) + smoothstep(0.,7.,time)*.5;
+        camFocal = mix(4., 3., excited.x) + smoothstep(0.,5.,time)*.8;
     } else if (time < 65.) { // Panel run
         float time = time-60.;
         eyeDir = vec3(0.,0.,1.);
@@ -202,9 +202,9 @@ void main(void)
         panelWarningPos = vec3(-5.,0.,-8.);
         
         eyeDir = normalize(mix(vec3(1.,-.5,1.), vec3(0.,.5,1.), smoothstep(2.8,3.2, time)));
-        eyeDir = mix(eyeDir, vec3(1.,-.5,1.), smoothstep(6.5,7., time));
+        eyeDir = mix(eyeDir, vec3(1.,-.5,1.), smoothstep(6.,6.5, time));
         headRot.y = smoothstep(3.,3.5, time)*.6;
-        headRot.x = smoothstep(3.,3.5, time)*smoothstep(8.,6., time)*.25*sin(time*3.);
+        headRot.x = smoothstep(3.,3.5, time)*smoothstep(7.,5., time)*.25*sin(time*3.);
         animationAmp = vec3(1.,.2,.5);
         animationSpeed = vec3(0.,.2,1.);
         camPos = vec3(-3.,4.8,-30.);
