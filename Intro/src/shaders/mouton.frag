@@ -90,7 +90,7 @@ vec2 blood(vec3 p) {
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
     if (d < .4) {
-        d -= pow((noise(p*.9+0.)*.5+noise(p*1.6)*.3+noise(p*2.7)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-145.)*3.));
+        d -= pow((noise(p*.9+0.)*.5+noise(p*1.6)*.3+noise(p*2.7)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-135.)*3.));
         return vec2(d, BLOOD);
     }
     return vec2(INFINITE, GROUND);
@@ -708,7 +708,7 @@ void main()
     // ----------------------------------------------------------------
     // Post processing pass
     // ----------------------------------------------------------------
-    const float endTime = 156.;
+    const float endTime = 146.;
     // gamma correction & color grading
     col = pow(pow(col, vec3(1./2.2)), vec3(1.0,1.05,1.1));
     
