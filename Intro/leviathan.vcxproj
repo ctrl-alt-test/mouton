@@ -554,8 +554,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\definitions.h" />
+    <ClInclude Include="src\editor.h" />
     <ClInclude Include="src\glext.h" />
     <ClInclude Include="src\4klang.h" />
+    <ClInclude Include="src\song.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\editor.cpp">

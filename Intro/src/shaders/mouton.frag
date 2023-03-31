@@ -323,7 +323,7 @@ vec2 map(vec3 p) {
 vec3 skyColor(vec3 rd, vec2 uv, float night) {
 
     // mon
-    vec2 moonPos = vec2(cos(iTime*.7+2.4), sin(iTime*.7+2.4)*.75 );
+    vec2 moonPos = vec2(cos(iTime*.7+2.), sin(iTime*.7+2.)*.75 );
     float moonCircle = smoothstep(0.151,0.15, length(uv-moonPos));
     float moon = moonCircle * smoothstep(0.13,0.2701, length(uv-moonPos-vec2(.05,0.05))+0.004*noise(100.*vec3(uv-moonPos, 0.)));
 
@@ -714,7 +714,7 @@ void main()
     col = mix(col, i_col2, i_alpha);
     
     // fade in & out + circle to black
-    col *= smoothstep(0.,10., iTime) * smoothstep(162., 161., iTime);
+    col *= smoothstep(0.,8., iTime) * smoothstep(162., 161., iTime);
     
     // vignetting
     fragColor = vec4(col / (1.+pow(length(uv*2.-1.),4.)*.04),1.);
