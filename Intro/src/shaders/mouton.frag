@@ -64,7 +64,6 @@ float star2d(in vec2 p, in float r, in float rf);
 // Distance field 
 // ---------------------------------------------
 vec2 map(vec3 p);
-//float trace(vec3 ro, vec3 rd, vec2 nf);
 float shadow( vec3 ro, vec3 rd);
 
 // Materials
@@ -91,7 +90,7 @@ vec2 blood(vec3 p) {
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
     if (d < .4) {
-        d -= pow((noise(p*.7+1.)*.5+noise(p*1.7+100.)*.3+noise(p*2.7+100.)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-150.)*4.))+.03;
+        d -= pow((noise(p*.9+0.)*.5+noise(p*1.6)*.3+noise(p*2.7)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-145.)*3.));
         return vec2(d, BLOOD);
     }
     return vec2(INFINITE, GROUND);
@@ -353,6 +352,7 @@ float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
     return max(0.,1.0 - falloff*1.5*occ);
 }
 
+/*
 vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize, vec3 m) 
 {
     vec3 n = m*ro;
@@ -365,7 +365,7 @@ vec2 boxIntersection( in vec3 ro, in vec3 rd, vec3 boxSize, vec3 m)
     return vec2( tN, tF );
 }
 
-float fastTrace(vec3 ro, vec3 rd) {
+float trace(vec3 ro, vec3 rd) {
 
     vec3 m = 1.0/rd;
     float result = INFINITE;
@@ -455,6 +455,18 @@ float fastTrace(vec3 ro, vec3 rd) {
     
     return result;
 }
+*/
+float trace(vec3 ro, vec3 rd) {
+    float t = 0.01;
+    for(int i=0; i<128; i++) {
+        float d = map(ro+rd*t).x;
+        t += d;
+        if (t > 100.) break;
+        if (abs(d) < 0.001) break;
+    }
+    
+    return t;
+}
 
 // Specular light effect for the eyes envmap.
 float specular(vec3 v, vec3 l, float size)
@@ -478,7 +490,7 @@ void main()
     vec3 rd = lookat(ro, ta) * normalize(vec3(v,camFocal - length(v)*fishEyeFactor));
         
     // Trace : intersection point + normal
-    float t = fastTrace(ro,rd);
+    float t = trace(ro,rd);
     vec3 p = ro + rd * t;
     vec2 dmat = map(p);
     vec2 eps = vec2(0.0001,0.0);
@@ -727,19 +739,6 @@ void main()
 // ---------------------------------------------
 // Raytracing toolbox
 // ---------------------------------------------
-/*
-float trace(vec3 ro, vec3 rd, vec2 nf) {
-    float t = nf.x;
-    for(int i=0; i<128; i++) {
-        float d = map(ro+rd*t).x;
-        t += d;
-        if (t > nf.y) break;
-        if (abs(d) < 0.001) break;
-    }
-    
-    return t;
-}
-*/
 
 // https://www.shadertoy.com/view/lsKcDD
 float shadow( vec3 ro, vec3 rd)
