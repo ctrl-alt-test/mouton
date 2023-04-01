@@ -165,7 +165,7 @@ void main(void)
         noseSize += smoothstep(0.5,.6,t)*smoothstep(0.7,.6,t)*.3;
         t = mod(time+.3, 3.);
         noseSize += smoothstep(0.5,.6,t)*smoothstep(0.7,.6,t)*.3;
-    } else if (time < 78.) { // Eye focus
+    } else if (time < 76.) { // Eye focus
         float time = time-73.;
         float t = smoothstep(1.,3.,time);
         
@@ -180,8 +180,8 @@ void main(void)
         
         if (time > 3.)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
-    } else if (time < 81.) { // Panel warning!
-        float time = time-78.;
+    } else if (time < 81.25) { // Panel warning!
+        float time = time-76.;
         panelWarningPos = vec3(-5.,0.,-8.);
         
         eyeDir = vec3(.5,-0.15,1.);
@@ -196,7 +196,7 @@ void main(void)
         
         camTa = mix(vec3(0., 3., 0.), vec3(-5., 5., -9.), transition);
     } else if (time < 88.) { // Panel moonwalk
-        float time = time-81.; // -2
+        float time = time-81.25; // -2
         
         sheepPos = vec3(0.,0.,-11.);
         panelWarningPos = vec3(-5.,0.,-8.);
@@ -324,7 +324,7 @@ void main(void)
         camTa = vec3(2., 2, -3.-time*2.);
         camFocal = 3.;
     } else if (time < 142.) { // Splash
-        float time = time-137.;
+        float time = time-137.2;
         
         eyeDir = vec3(0.,0.,1.);
         sheepPos = vec3(0.,(1.-smoothstep(.3,.25,time))*-4.8,-22.-time*2.);
