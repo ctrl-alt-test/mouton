@@ -200,7 +200,7 @@ vec2 sheep(vec3 p) {
     float body = length(p*vec3(1.,1.,.825)-vec3(0.,1.5,2.55)-bodyMove)-2.;
     
     if (body < 3.) {
-        float n = (pow(noise((p-bodyMove+vec3(.05,0.,0.))*2.)*.5+.5, .75)*2.-1.);
+        float n = (pow(noise((p-bodyMove+vec3(.05,0.0,0.5))*2.)*.5+.5, .75)*2.-1.);
         body = body + .05 - n*.2;
 
 
@@ -349,7 +349,7 @@ float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
         occ += (h-d)*sca;
         sca *= .95;
     }
-    return max(0.,1.0 - falloff*1.5*occ);
+    return clamp(1.0 - falloff*1.5*occ, 0., 1.);
 }
 
 /*
@@ -696,7 +696,7 @@ void main()
     }
         
     // Excited stars
-    vec2 p2 = vec2(abs(v.x*5.-.3)-1.5, v.y*5.-1.4);
+    vec2 p2 = vec2(abs(v.x*5.-.35)-1.8, v.y*5.-1.4);
     p2 = rot(iTime*5.) * p2;
     float size = (1.4+0.2*sin(iTime*20.))
         * smoothstep(0.5,1.,excited.x);
