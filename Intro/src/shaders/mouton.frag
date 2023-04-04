@@ -90,7 +90,7 @@ vec2 blood(vec3 p) {
     p.y -= -anvilPos.y;
     float d = p.y+smoothstep(1.,20.,length(p.xz));
     if (d < .4) {
-        d -= pow((noise(p*.9+0.)*.5+noise(p*1.6)*.3+noise(p*2.7)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-137.)*3.));
+        d -= pow((noise(p*.9+0.)*.5+noise(p*1.6)*.3+noise(p*2.7)*.1)*.5+.5, 3.)*.45 * (1.-exp(-(iTime-137.3)*3.));
         return vec2(d, BLOOD);
     }
     return vec2(INFINITE, GROUND);
