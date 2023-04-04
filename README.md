@@ -1,54 +1,31 @@
-# Script
+# The Sheep and the Flower
 
-### 1 - Le mouton a faim.
-Le mouton est dans un désert.
-En option: on le voit finir de manger la dernière touffe d’herbe.
+Ctrl-Alt-Test & Razor 1911 present 'The Sheep and the Flower', a demo in 8kB.
 
-Zoom out : le mouton est tout seul, il n’y a rien autour.
+The moral of the story is left as an exercise to the viewer.
+We're not La Fontaine.
 
-### 2 - Le mouton marche longtemps
-Plusieurs plans du mouton qui marche.
-On peut le montrer à plusieurs endroits ; ou alors, alternance jour / nuit pour montrer qu’il marche longtemps.
+No animals were harmed during the making of this demo.
+The sheep is a stunt actor.  Do not try this at home.
 
-### 3 - Il voit un panneau restaurant
-Le mouton tombe nez à nez avec un panneau. Il est surpris. Le panneau indique un restaurant. Le mouton suit le panneau.
+Created by:
 
-### 4 - Il marche longtemps (bis)
-Variante du 2 ci-dessus.
+- Anatole Duprat (Anat)
+- Laurent Le Brun (LLB)
+- Pierre Martin (Cyborg Jeff)
 
-### 5 - Il est en haut d’une colline
-Le mouton arrive en haut d’une colline. Il écarquille les yeux et découvre un champ d’herbe fraîche. Il court en descendant la colline.
+Special thanks to:
 
-### 6. Il tombe sur un panneau /!\
-En bas de la colline, il voit le panneau point d’exclamation. Il hésite ; il regarde l’herbe derrière. Il s’avance.
+- Steren Giannini & Xavier Dorémus for the inspiration (CAPODA)
+- Zavie & rubix
+- gopher & xTr1m for the 4klang support
 
-### 7. Il se fait écraser.
-Fin.
+Tools used:
 
-# Note
+- Leviathan 2.0 <https://github.com/armak/Leviathan-2.0/>
+- Crinkler <https://github.com/runestubbe/Crinkler>
+- 4klang <https://github.com/hzdgopher/64klang>
+- OpenMPT <https://openmpt.org/>
+- Shader Minifier <https://github.com/laurentlb/Shader_Minifier>
 
-Anti aliasing :
-
-- Distance Field AA : J'ai testé comme decrit dans ce [papier](https://graphics.stanford.edu/courses/cs348b-20-spring-content/uploads/hart.pdf), ne fonctionne pas dans certain cas.
-- TAA : Au vu de la complexité de l'animation, la reprojection me parait compliqué
-- Supersampling : La bonne méthode pour avoir un rendu de qualité mais trop couteux ? A voir a la fin
-- FXAA : La méthode actuellement utilisée, avec 2 passes. Ca fonctionne bien meme si ca rend l'image un peu flou ?
-
-Performance : Pour le moment tous les objets sont dans la scene pour simplifier. On pourra creer differentes variantes du shader pour ne tracer que certains objets a l'aide de macro.
-
-# Bugs
-
-- Problème dans le calcul de l'AO et du SSS : provoque une discontinuité a certains endroit due au faible sampling. Ajouter une rotation du kernel regle le probleme mais introduit du bruit. (Passer le #if a 1 dans AmbientOcclusion()). A voir si on peut pas etre plus malin sur le sampling.
-
-- Kodelife : fichier binaire, pas de diff sur github :(. A voir si c'est bloquant a terme.
-
-
-# Idées / TODO
-
-- Mise en scène
-
-- Musique / son : [Oidos](https://www.pouet.net/prod.php?which=69524) ?
-
-
-- Faire un generique d'intro et fin pour ressembler encore plus a un short movie ?
- Generique de fin : Greetings ?
+In tribute to Maf464.
