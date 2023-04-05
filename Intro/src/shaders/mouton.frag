@@ -128,7 +128,7 @@ vec2 flower(vec3 p) {
         vec3 pp = pr;
         
         //moda
-        const float per = PI*.2;
+        float per = PI*.2;
         float a = atan(pp.z,pp.x);
         float l = length(pp.xz);
         a = mod(a-per/2.,per)-per/2.;
@@ -453,8 +453,7 @@ float trace(vec3 ro, vec3 rd) {
     for(int i=0; i<128; i++) {
         float d = map(ro+rd*t).x;
         t += d;
-        if (t > 100.) break;
-        if (abs(d) < 0.001) break;
+        if (t > 100. || abs(d) < 0.001) break;
     }
     
     return t;
