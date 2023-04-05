@@ -1,6 +1,6 @@
 #version 150
 out vec4 fragColor;
-const vec2 iResolution = vec2(1280.,720.);
+const vec2 iResolution = vec2(1920.,1080.);
 
 //----------------------------------------------------------------------
 // Vertex/Fragment IO
@@ -726,7 +726,7 @@ void main()
     col = mix(col, i_col2, i_alpha);
     
     // fade in & out + circle to black
-    col *= smoothstep(0.,8., iTime) * smoothstep(162., 161., iTime);
+    col *= smoothstep(0.,8., iTime) * smoothstep(153., 150., iTime);
     
     // vignetting
     fragColor = vec4(col / (1.+pow(length(uv*2.-1.),4.)*.04),1.);

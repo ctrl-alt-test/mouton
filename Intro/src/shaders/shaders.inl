@@ -27,7 +27,7 @@
 const char *mouton_frag =
  "#version 150\n"
  "out vec4 f;"
- "const vec2 v=vec2(1280,720);"
+ "const vec2 v=vec2(1920,1080);"
  "in vec3 m,s,y,x,z,i,l,r,c,e,d;"
  "in vec2 a,n;"
  "in float t,o,p,u,w;"
@@ -483,7 +483,7 @@ const char *mouton_frag =
    "float Y=fract(23.*pow(W,.25));"
    "Y-=smoothstep(.95,.99,Y);"
    "X=mix(X,mix(vec3(1,.6,0),vec3(1,0,0),pow(Y,1.)),smoothstep(.135,.136,W)*smoothstep(147.,148.,U));"
-   "X*=smoothstep(0.,8.,U)*smoothstep(162.,161.,U);"
+   "X*=smoothstep(0.,8.,U)*smoothstep(153.,150.,U);"
    "f=vec4(X/(1.+pow(length(y*2.-1.),4.)*.04),1);"
  "}";
 
@@ -785,7 +785,7 @@ const char *mouton_vert =
 const char *fxaa_frag =
  "#version 150\n"
  "out vec4 f;"
- "const vec2 b=vec2(1280,720);"
+ "const vec2 b=vec2(1920,1080);"
  "uniform sampler2D X;"
  "void main()"
  "{"
