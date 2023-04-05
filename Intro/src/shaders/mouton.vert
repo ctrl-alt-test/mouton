@@ -71,7 +71,7 @@ void main(void)
         camFocal = 4.;
         camPos = vec3(5., .5, 0.);
         camTa = vec3(0., .5, 1.);
-    } else if( time < 29.) { // Desert walking
+    } else if( time < 29.5) { // Desert walking
         float time = time-14.5;
         animationAmp = vec3(1.,.2, .25); // Slow walk
         animationSpeed = vec3(1.,1.,2.);
@@ -112,7 +112,7 @@ void main(void)
         
         if (time > 3.)
             blink = max(fract(iTime*.333), fract(iTime*.333+.08));
-    } else if (time < 55.) { // Panel food!
+    } else if (time < 54.8) { // Panel food!
         float time = time-52.;
         panelPos = vec3(-5.,0.,-8.);
         sheepPos = vec3(INFINITE);
@@ -135,7 +135,7 @@ void main(void)
         eyeDir = vec3(.3,0.,1.);
         camPos = mix(vec3(0.,3.,-4.), vec3(0.,2.,-6.), excited.x);
         camTa = vec3(0., 3., 0.);
-        camFocal = mix(4., 3., excited.x) + smoothstep(0.,5.,time)*.8;
+        camFocal = mix(4., 3., excited.x) + smoothstep(0.,5.,time);
     } else if (time < 65.) { // Panel run
         float time = time-60.;
         eyeDir = vec3(0.,0.,1.);
