@@ -27,5 +27,6 @@ Tools used:
 - 4klang <https://github.com/hzdgopher/64klang>
 - OpenMPT <https://openmpt.org/>
 - Shader Minifier <https://github.com/laurentlb/Shader_Minifier>
+- KodeLife <https://hexler.net/kodelife>
 
 In tribute to Maf464.
