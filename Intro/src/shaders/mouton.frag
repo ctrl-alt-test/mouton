@@ -339,17 +339,9 @@ vec3 skyColor(vec3 rd, vec2 uv, float night) {
 }
 
 float fastAO( in vec3 pos, in vec3 nor, float maxDist, float falloff ) {
-    float occ = 0.0;
-    float sca = 1.0;
-    
-    for( int i=1; i<3; i++ )
-    {
-        float h = float(i)*.5 * maxDist;
-        float d = map( pos + h*nor ).x;
-        occ += (h-d)*sca;
-        sca *= .95;
-    }
-    return clamp(1.0 - falloff*1.5*occ, 0., 1.);
+    float occ1 = .5*maxDist - map(pos + nor*maxDist *.5).x;
+    float occ2 = .95*(maxDist - map(pos + nor*maxDist).x);
+    return clamp(1. - falloff*1.5*(occ1 + occ2), 0., 1.);
 }
 
 /*
