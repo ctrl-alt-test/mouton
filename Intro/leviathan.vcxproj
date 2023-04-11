@@ -469,7 +469,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WINDOWS;A32BITS;SIMD;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WINDOWS_IGNORE_PACKING_MISMATCH;WINDOWS;A32BITS;SIMD;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>false</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -510,7 +510,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/CRINKLER  /RANGE:opengl32 /HASHTRIES:100 /COMPMODE:INSTANT /ORDERTRIES:2000 /PROGRESSGUI /HASHSIZE:100 /UNSAFEIMPORT /UNALIGNCODE /SATURATE /NOINITIALIZERS /TRANSFORM:CALLS %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>opengl32.lib;winmm.lib;src/4klang/4klang.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;winmm.lib;4klang.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>out\leviathan-snapshot.exe</OutputFile>
       <SuppressStartupBanner>
       </SuppressStartupBanner>
